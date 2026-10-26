@@ -53,26 +53,28 @@ export function TaskList({ tasks, date, canMove = false }: { tasks: Task[]; date
 
   return (
     <div className="flex flex-col gap-2">
-      {items.length === 0 && <p className="text-sm text-muted">Nothing due. Add something below.</p>}
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col overflow-hidden rounded-3xl border border-line bg-card">
+        {items.length === 0 && (
+          <li className="px-4 py-5 text-center text-sm text-muted">Nothing due today. Enjoy the space, or add one below.</li>
+        )}
         {items.map((task) => {
           const done = task.status === "done";
           const overdue = !done && task.due_date && task.due_date < date;
           const optimistic = task.id.startsWith("optimistic-");
           return (
-            <li key={task.id} className="flex items-center gap-3 rounded-2xl border border-line bg-card px-4 py-3">
+            <li key={task.id} className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
               <button
                 type="button"
                 aria-label={done ? "Mark not done" : "Mark done"}
                 disabled={optimistic}
                 onClick={() => run({ type: "done", id: task.id, done: !done }, () => setTaskDone(task.id, !done, date))}
-                className={`flex size-7 shrink-0 items-center justify-center rounded-lg border-2 ${
-                  done ? "border-good bg-good text-background" : "border-line"
+                className={`flex size-7 shrink-0 items-center justify-center rounded-full border-2 text-sm transition active:scale-90 ${
+                  done ? "border-good bg-good text-card" : "border-line hover:border-accent"
                 }`}
               >
                 {done ? "✓" : ""}
               </button>
-              <span className="flex flex-1 flex-col">
+              <span className="flex min-w-0 flex-1 flex-col">
                 <span className={done ? "text-muted line-through" : ""}>{task.title}</span>
                 {overdue && <span className="text-xs text-bad">Due {formatDay(task.due_date!)}</span>}
               </span>
@@ -80,7 +82,7 @@ export function TaskList({ tasks, date, canMove = false }: { tasks: Task[]; date
                 <button
                   type="button"
                   onClick={() => run({ type: "hide", id: task.id }, () => moveTaskToTomorrow(task.id, date))}
-                  className="rounded-full bg-chip px-3 py-1.5 text-xs font-medium"
+                  className="shrink-0 rounded-full bg-chip px-3 py-1.5 text-xs font-medium"
                 >
                   → Tomorrow
                 </button>
@@ -93,11 +95,11 @@ export function TaskList({ tasks, date, canMove = false }: { tasks: Task[]; date
         <input
           ref={inputRef}
           name="title"
-          placeholder="Add a task for today"
+          placeholder="Add a task for today…"
           autoComplete="off"
-          className="min-h-12 flex-1 rounded-2xl border border-line bg-card px-4"
+          className="min-h-12 flex-1 rounded-full border border-line bg-card px-5 outline-none transition focus:border-accent"
         />
-        <button className="min-h-12 rounded-2xl bg-foreground px-5 font-medium text-background">Add</button>
+        <button className="min-h-12 rounded-full bg-accent px-5 font-semibold text-on-accent active:scale-95">Add</button>
       </form>
     </div>
   );

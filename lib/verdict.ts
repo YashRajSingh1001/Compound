@@ -12,6 +12,11 @@ export function verdictInputs(day: DaySnapshot) {
   return {
     date: formatDay(day.date),
     all_non_negotiables_done: day.green,
+    // Pre-counted so the model can't miscount the list below.
+    non_negotiables_done: `${day.daily.filter((d) => d.done).length} of ${day.daily.length}`,
+    done_today: day.daily.filter((d) => d.done).map((d) => d.target.name),
+    not_done_today: day.daily.filter((d) => !d.done).map((d) => d.target.name),
+    green_day_streak: day.streak,
     daily: day.daily.map((d) => ({
       name: d.target.name,
       done: d.done,
@@ -48,7 +53,7 @@ export const VERDICT_SYSTEM = `You are the honest evening coach inside a persona
 You get one day's data as JSON: daily non-negotiables, weekly targets with pace, dated milestones and tasks.
 
 Write the verdict for today:
-- First sentence: a straight call on the day (green day or not, and why).
+- First sentence: a straight call on the day (green day or not), naming what was done (done_today) and what wasn't (not_done_today).
 - Then the single biggest gap, using the real numbers (e.g. "Study is 2 h behind pace with 2 days left").
 - Mention a milestone only if its needed pace looks hard to keep.
 - End with one concrete action for tomorrow.

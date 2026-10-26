@@ -23,8 +23,8 @@ export function CheckInFlow({ day }: { day: DaySnapshot }) {
       title: "Non-negotiables",
       hint: "Did the basics happen today?",
       show: day.daily.length > 0,
-      body: day.daily.map((status) => (
-        <DailyTile key={status.target.id} status={status} color={color(status.target.area_id)} />
+      body: day.daily.map((status, i) => (
+        <DailyTile key={status.target.id} status={status} color={color(status.target.area_id)} index={i} />
       )),
     },
     {
@@ -36,14 +36,17 @@ export function CheckInFlow({ day }: { day: DaySnapshot }) {
           {day.weekly
             .filter((w) => w.direct)
             .map((progress) => (
-              <WeeklyQuickLog key={progress.target.id} progress={progress} date={day.date} />
+              <WeeklyQuickLog key={progress.target.id} progress={progress} date={day.date} color={color(progress.target.area_id)} />
             ))}
-          <ul className="flex flex-col divide-y divide-line rounded-2xl border border-line bg-card">
+          <ul className="flex flex-col divide-y divide-line overflow-hidden rounded-3xl border border-line bg-card">
             {day.weekly
               .filter((w) => !w.direct)
               .map((w) => (
                 <li key={w.target.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
-                  <span className="font-medium">{w.target.name}</span>
+                  <span className="flex items-center gap-2 font-medium">
+                    <span aria-hidden>{w.target.rules.icon}</span>
+                    {w.target.name}
+                  </span>
                   <span className="flex items-center gap-2 text-muted">
                     {formatAmount(w.actual, w)} / {formatAmount(w.goal, w)}
                     <PaceBadge status={w.status} />
@@ -83,14 +86,24 @@ export function CheckInFlow({ day }: { day: DaySnapshot }) {
   return (
     <div className="flex flex-col gap-5">
       <header className="flex flex-col gap-3">
-        <p className="text-sm text-muted">Evening check-in · {formatDay(day.date)}</p>
+        <div className="flex items-center justify-between">
+          <span className="label">
+            Evening check-in · {formatDay(day.date)}
+          </span>
+          <span className="label">
+            {index + 1} / {steps.length}
+          </span>
+        </div>
         <div className="flex gap-1.5" aria-hidden>
           {steps.map((s, i) => (
-            <span key={s.title} className={`h-1 flex-1 rounded-full ${i <= index ? "bg-foreground" : "bg-chip"}`} />
+            <span
+              key={s.title}
+              className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i <= index ? "bg-accent" : "bg-chip"}`}
+            />
           ))}
         </div>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{step.title}</h1>
+        <div className="rise" key={step.title}>
+          <h1 className="font-serif text-5xl leading-tight italic tracking-tight">{step.title}</h1>
           <p className="text-muted">{step.hint}</p>
         </div>
       </header>
@@ -102,7 +115,7 @@ export function CheckInFlow({ day }: { day: DaySnapshot }) {
           <button
             type="button"
             onClick={() => setIndex(index - 1)}
-            className="min-h-12 flex-1 rounded-2xl bg-chip font-medium"
+            className="min-h-12 flex-1 rounded-full bg-chip font-medium active:scale-[0.98]"
           >
             Back
           </button>
@@ -111,7 +124,7 @@ export function CheckInFlow({ day }: { day: DaySnapshot }) {
           <button
             type="button"
             onClick={() => setIndex(index + 1)}
-            className="min-h-12 flex-[2] rounded-2xl bg-foreground font-medium text-background"
+            className="min-h-12 flex-[2] rounded-full bg-accent font-semibold text-on-accent active:scale-[0.98]"
           >
             Next
           </button>

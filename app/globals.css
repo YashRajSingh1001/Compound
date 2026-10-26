@@ -1,34 +1,67 @@
 @import "tailwindcss";
 
+/* Theme: warm paper in light, warm ink in dark, one gold accent.
+   data-theme="light|dark" on <html> overrides the system setting. */
+
 :root {
-  --background: #fafafa;
-  --foreground: #18181b;
-  --card: #ffffff;
-  --muted: #71717a;
-  --line: #e4e4e7;
-  --chip: #f4f4f5;
-  --good: #16a34a;
-  --good-soft: #dcfce7;
-  --warn: #d97706;
-  --warn-soft: #fef3c7;
-  --bad: #dc2626;
-  --bad-soft: #fee2e2;
+  --background: #f6f3ed;
+  --foreground: #1d1b17;
+  --card: #fffdf9;
+  --muted: #7a7368;
+  --line: #e7e1d6;
+  --chip: #efe9df;
+  --accent: #a87f32;
+  --accent-soft: #f3e8d2;
+  --on-accent: #fffdf9;
+  --good: #2f8a4c;
+  --good-soft: #e1f1e4;
+  --warn: #b7791f;
+  --warn-soft: #fbefd9;
+  --bad: #c2412d;
+  --bad-soft: #f8e3de;
+  --glow: rgba(168, 127, 50, 0.1);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --background: #0d0c0a;
+  --foreground: #f2ede4;
+  --card: #161512;
+  --muted: #9a9285;
+  --line: #26241f;
+  --chip: #211f1b;
+  --accent: #d8b26e;
+  --accent-soft: #2c2518;
+  --on-accent: #17140e;
+  --good: #6fcf8b;
+  --good-soft: #15251a;
+  --warn: #f0b85a;
+  --warn-soft: #2b2111;
+  --bad: #ef7f6b;
+  --bad-soft: #2c1611;
+  --glow: rgba(216, 178, 110, 0.09);
+  color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #09090b;
-    --foreground: #f4f4f5;
-    --card: #18181b;
-    --muted: #a1a1aa;
-    --line: #27272a;
-    --chip: #27272a;
-    --good: #4ade80;
-    --good-soft: #14532d;
-    --warn: #fbbf24;
-    --warn-soft: #451a03;
-    --bad: #f87171;
-    --bad-soft: #450a0a;
+  :root:not([data-theme="light"]) {
+    --background: #0d0c0a;
+    --foreground: #f2ede4;
+    --card: #161512;
+    --muted: #9a9285;
+    --line: #26241f;
+    --chip: #211f1b;
+    --accent: #d8b26e;
+    --accent-soft: #2c2518;
+    --on-accent: #17140e;
+    --good: #6fcf8b;
+    --good-soft: #15251a;
+    --warn: #f0b85a;
+    --warn-soft: #2b2111;
+    --bad: #ef7f6b;
+    --bad-soft: #2c1611;
+    --glow: rgba(216, 178, 110, 0.09);
+    color-scheme: dark;
   }
 }
 
@@ -39,6 +72,9 @@
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-chip: var(--chip);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
   --color-good: var(--good);
   --color-good-soft: var(--good-soft);
   --color-warn: var(--warn);
@@ -47,11 +83,46 @@
   --color-bad-soft: var(--bad-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-instrument-serif);
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(60rem 30rem at 50% -10rem, var(--glow), transparent 70%),
+    var(--background);
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Small caps labels in the mono face, like "MON · 26 OCTOBER". */
+.label {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 0.35s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
 }

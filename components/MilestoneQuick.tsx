@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { setDayValue, setMilestoneTaskStatus } from "@/app/actions";
 import { daysBetween, formatDay, formatMinutes } from "@/lib/dates";
 import type { MilestoneProgress } from "@/lib/progress";
-import { ProgressBar } from "./ui";
+import { IconBubble, ProgressBar } from "./ui";
 
 /**
  * Check-in view of one milestone: progress by hours, plus a quick way to move
@@ -19,9 +19,12 @@ export function MilestoneQuick({ progress, date, color }: { progress: MilestoneP
   const stale = mode === "latest" && (!progress.latestDate || daysBetween(progress.latestDate, date) >= 7);
 
   return (
-    <div className={`flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 ${pending ? "opacity-70" : ""}`}>
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="font-semibold">{target.name}</span>
+    <div className={`flex flex-col gap-3 rounded-3xl border border-line bg-card p-4 ${pending ? "opacity-70" : ""}`}>
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex items-center gap-3 font-semibold">
+          <IconBubble icon={target.rules.icon} name={target.name} color={color} size={36} />
+          {target.name}
+        </span>
         {target.due_date && <span className="shrink-0 text-xs text-muted">{formatDay(target.due_date)}</span>}
       </div>
       <ProgressBar value={done} max={total} color={color} />
@@ -35,7 +38,7 @@ export function MilestoneQuick({ progress, date, color }: { progress: MilestoneP
 
       {mode === "tasks" &&
         progress.nextTasks.map((task) => (
-          <div key={task.id} className="flex items-center gap-2 rounded-xl bg-chip px-3 py-2">
+          <div key={task.id} className="flex items-center gap-2 rounded-2xl bg-chip px-3 py-2">
             <span className="flex flex-1 flex-col text-sm">
               {task.title}
               <span className="text-xs text-muted">
@@ -46,7 +49,7 @@ export function MilestoneQuick({ progress, date, color }: { progress: MilestoneP
               <button
                 type="button"
                 onClick={() => run(() => setMilestoneTaskStatus(task.id, "in_progress"))}
-                className="rounded-full bg-card px-3 py-1.5 text-xs font-medium"
+                className="rounded-full bg-card px-3 py-1.5 text-xs font-medium active:scale-95"
               >
                 Start
               </button>
@@ -54,7 +57,7 @@ export function MilestoneQuick({ progress, date, color }: { progress: MilestoneP
             <button
               type="button"
               onClick={() => run(() => setMilestoneTaskStatus(task.id, "done"))}
-              className="rounded-full bg-good px-3 py-1.5 text-xs font-medium text-background"
+              className="rounded-full bg-good px-3 py-1.5 text-xs font-semibold text-card active:scale-95"
             >
               Done
             </button>
@@ -75,9 +78,9 @@ export function MilestoneQuick({ progress, date, color }: { progress: MilestoneP
             value={count}
             onChange={(e) => setCount(e.target.value.replace(/\D/g, ""))}
             placeholder={stale ? `Weekly update: current ${target.unit ?? "count"}` : `Update ${target.unit ?? "count"}`}
-            className="min-h-11 flex-1 rounded-xl border border-line bg-transparent px-3 text-sm"
+            className="min-h-11 flex-1 rounded-full border border-line bg-transparent px-4 text-sm outline-none focus:border-accent"
           />
-          <button className="min-h-11 rounded-xl bg-chip px-4 text-sm font-medium">Save</button>
+          <button className="min-h-11 rounded-full bg-accent px-5 text-sm font-semibold text-on-accent">Save</button>
         </form>
       )}
     </div>

@@ -58,55 +58,60 @@ const TARGETS: TargetSeed[] = [
   // Daily non-negotiables — a day is green when all are done.
   {
     key: "study_daily", area: "study", name: "Study block", kind: "daily", metric: "minutes",
-    target_min: 90, unit: "min", rules: { weekend_min: 150 },
+    target_min: 90, unit: "min", rules: { icon: "📚", weekend_min: 150 },
   },
   {
     key: "workout_daily", area: "fitness", name: "Workout", kind: "daily", metric: "bool",
-    rules: { rest_days_per_week: 1, tags: ["gym", "run", "rest"] },
+    rules: { icon: "🏋️", rest_days_per_week: 1, tags: ["gym", "run", "rest"] },
   },
   {
     key: "vocab_daily", area: "vocab", name: "Vocab", kind: "daily", metric: "bool",
-    rules: { new_words: 5, recall_test: true },
+    rules: { icon: "🔤", new_words: 5, recall_test: true },
   },
-  { key: "journal_daily", area: "journal", name: "Journal", kind: "daily", metric: "bool" },
+  {
+    key: "journal_daily", area: "journal", name: "Journal", kind: "daily", metric: "bool",
+    rules: { icon: "✍️" },
+  },
 
   // Weekly targets.
   {
     key: "study_weekly", area: "study", name: "Study hours", kind: "weekly", metric: "minutes",
     target_min: 750, unit: "min", rollup_from: "study_daily",
     notes: "5 × 90 min + 2 × 150 min",
+    rules: { icon: "⏱️" },
   },
   {
     key: "study_genai", area: "study", name: "GenAI cert", kind: "weekly", metric: "minutes",
-    target_min: 450, unit: "min", rollup_from: "study_daily", rules: { tag: "genai" },
+    target_min: 450, unit: "min", rollup_from: "study_daily", rules: { icon: "🤖", tag: "genai" },
   },
   {
     key: "study_pytorch", area: "study", name: "PyTorch", kind: "weekly", metric: "minutes",
-    target_min: 300, unit: "min", rollup_from: "study_daily", rules: { tag: "pytorch" },
+    target_min: 300, unit: "min", rollup_from: "study_daily", rules: { icon: "🔥", tag: "pytorch" },
     notes: "Gets all 750 min once the GenAI course is done",
   },
   {
     key: "workouts_weekly", area: "fitness", name: "Workouts", kind: "weekly", metric: "count",
     target_min: 6, unit: "sessions", rollup_from: "workout_daily",
-    rules: { exclude_tags: ["rest"] },
+    rules: { icon: "💪", exclude_tags: ["rest"] },
   },
   {
     key: "gym_weekly", area: "fitness", name: "Gym", kind: "weekly", metric: "count",
     target_min: 4, target_max: 5, unit: "sessions", rollup_from: "workout_daily",
-    rules: { tag: "gym" },
+    rules: { icon: "🏋️", tag: "gym" },
   },
   {
     key: "run_weekly", area: "fitness", name: "Running", kind: "weekly", metric: "count",
     target_min: 1, target_max: 2, unit: "runs", rollup_from: "workout_daily",
-    rules: { tag: "run" },
+    rules: { icon: "🏃", tag: "run" },
   },
   {
     key: "reels_weekly", area: "content", name: "Reels on @yashraj.decodes", kind: "weekly",
     metric: "count", target_min: 3, unit: "reels",
+    rules: { icon: "🎬" },
   },
   {
     key: "news_weekly", area: "news", name: "Tech news", kind: "weekly", metric: "count",
-    target_min: 5, unit: "days", rules: { minutes_per_day: 10 },
+    target_min: 5, unit: "days", rules: { icon: "📰", minutes_per_day: 10 },
     notes: "ReadKernel counts",
   },
 
@@ -114,19 +119,19 @@ const TARGETS: TargetSeed[] = [
   {
     key: "databricks", area: "study", name: "Databricks GenAI Engineer Associate",
     kind: "milestone", metric: "minutes", unit: "min", due_date: "2026-11-17",
-    rules: { progress: "task_minutes" },
+    rules: { icon: "🧱", progress: "task_minutes" },
     notes: "Udemy: Databricks Generative AI Engineer Associate Exam Prep. Date = course target; exam TBD (proposed: last week of Nov 2026).",
   },
   {
     key: "pytorch", area: "study", name: "PyTorch through section 05", kind: "milestone",
     metric: "minutes", unit: "min", due_date: "2026-12-05",
-    rules: { progress: "task_minutes" },
+    rules: { icon: "🔥", progress: "task_minutes" },
     notes: "learnpytorch.io. Target ~early Dec 2026.",
   },
   {
     key: "instagram", area: "content", name: "2,000 followers on @yashraj.decodes",
     kind: "milestone", metric: "count", target_min: 2000, unit: "followers",
-    due_date: "2026-12-31", rules: { aggregate: "latest", log_every: "week" },
+    due_date: "2026-12-31", rules: { icon: "📈", aggregate: "latest", log_every: "week" },
   },
 ];
 

@@ -5,7 +5,7 @@ import { addSession, deleteLog, setDayValue } from "@/app/actions";
 import { formatMinutes } from "@/lib/dates";
 import type { DailyStatus } from "@/lib/progress";
 import type { DailyLog } from "@/lib/types";
-import { Chip, ProgressBar } from "./ui";
+import { ActionPill, Chip, IconBubble, ProgressRing } from "./ui";
 
 const SESSION_PRESETS = [15, 30, 45, 60, 90];
 
@@ -20,7 +20,7 @@ type LogChange = { type: "add"; log: DailyLog } | { type: "remove"; id: string }
  * - bool with tags (Workout): tap opens gym / run / rest.
  * - minutes (Study): tap opens session presets, split by tag.
  */
-export function DailyTile({ status, color }: { status: DailyStatus; color?: string }) {
+export function DailyTile({ status, color, index = 0 }: { status: DailyStatus; color?: string; index?: number }) {
   const { target, date, required, tags } = status;
   const [open, setOpen] = useState(false);
   const [tag, setTag] = useState<string | null>(tags[0] ?? null);
@@ -71,48 +71,48 @@ export function DailyTile({ status, color }: { status: DailyStatus; color?: stri
   }
 
   let detail: string;
-  if (target.metric === "minutes") detail = `${formatMinutes(value)} / ${formatMinutes(required)}`;
-  else if (extraRest) detail = "Extra rest day";
-  else if (tags.length) detail = loggedTag ?? "Not logged";
-  else detail = done ? "Done" : "Not done";
+  if (target.metric === "minutes") detail = `${formatMinutes(value)} of ${formatMinutes(required)}`;
+  else if (extraRest) detail = "Extra rest day this week";
+  else if (tags.length) detail = loggedTag ? `Logged · ${loggedTag}` : "Not logged yet";
+  else detail = done ? "Done for today" : "Not done yet";
+
+  const expandable = target.metric !== "bool" || tags.length > 0;
+  const ring = target.metric === "minutes" ? Math.min(value / required, 1) : done ? 1 : 0;
+
+  let pill: React.ReactNode;
+  if (!expandable) pill = done ? "✓ Done" : "Done";
+  else if (target.metric === "minutes") pill = done ? "✓ + Log" : "+ Log";
+  else pill = loggedTag && !extraRest ? `✓ ${loggedTag}` : "Log";
 
   return (
     <div
-      className={`overflow-hidden rounded-2xl border transition ${
-        done ? "border-good bg-good-soft" : "border-line bg-card"
+      className={`rise overflow-hidden rounded-3xl border bg-card transition-colors ${
+        done ? "border-good/50" : "border-line"
       } ${pending ? "opacity-80" : ""}`}
+      style={{ animationDelay: `${index * 50}ms` }}
     >
-      <button type="button" onClick={onTileTap} className="flex min-h-18 w-full items-center gap-4 px-4 py-3 text-left">
-        <span
-          className={`flex size-9 shrink-0 items-center justify-center rounded-full border-2 text-lg ${
-            done ? "border-good bg-good text-background" : "border-line"
-          }`}
-          style={done ? undefined : { borderColor: color }}
-          aria-hidden
+      <div className="flex items-center gap-3 p-3 pr-4">
+        <button
+          type="button"
+          onClick={onTileTap}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+          aria-expanded={expandable ? open : undefined}
         >
-          {done ? "✓" : ""}
-        </span>
-        <span className="flex flex-1 flex-col">
-          <span className="text-lg font-semibold">{target.name}</span>
-          <span className={`text-sm ${extraRest ? "text-warn" : "text-muted"}`}>
-            {detail}
+          <ProgressRing value={ring} max={1} size={52} stroke={3.5} color={done ? "var(--good)" : color}>
+            <IconBubble icon={target.rules.icon} name={target.name} color={done ? "var(--good)" : color} size={40} />
+          </ProgressRing>
+          <span className="flex min-w-0 flex-col">
+            <span className="truncate text-[17px] font-semibold">{target.name}</span>
+            <span className={`text-sm ${extraRest ? "text-warn" : done ? "text-good" : "text-muted"}`}>{detail}</span>
           </span>
-        </span>
-        {target.metric !== "bool" || tags.length ? (
-          <span className="text-muted" aria-hidden>
-            {open ? "▴" : "▾"}
-          </span>
-        ) : null}
-      </button>
-
-      {target.metric === "minutes" && (
-        <div className="px-4 pb-3">
-          <ProgressBar value={value} max={required} color={color} />
-        </div>
-      )}
+        </button>
+        <ActionPill onClick={onTileTap} active={done && !expandable} label={`${target.name}: ${expandable ? "open" : "toggle done"}`}>
+          {pill}
+        </ActionPill>
+      </div>
 
       {open && target.metric === "bool" && tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 px-4 pb-4">
+        <div className="flex flex-wrap gap-2 border-t border-line px-4 py-3">
           {tags.map((t) => (
             <Chip key={t} active={loggedTag === t && logs.length > 0} onClick={() => pickTag(t)}>
               {t}
@@ -122,9 +122,10 @@ export function DailyTile({ status, color }: { status: DailyStatus; color?: stri
       )}
 
       {open && target.metric === "minutes" && (
-        <div className="flex flex-col gap-3 px-4 pb-4">
+        <div className="flex flex-col gap-3 border-t border-line px-4 py-3">
           {tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="label mr-1">On</span>
               {tags.map((t) => (
                 <Chip key={t} active={tag === t} onClick={() => setTag(t)}>
                   {t}
@@ -143,9 +144,9 @@ export function DailyTile({ status, color }: { status: DailyStatus; color?: stri
             ))}
           </div>
           {logs.length > 0 && (
-            <ul className="flex flex-col gap-1 text-sm">
+            <ul className="flex flex-col gap-1.5 text-sm">
               {logs.map((l) => (
-                <li key={l.id} className="flex items-center justify-between rounded-lg bg-chip px-3 py-2">
+                <li key={l.id} className="flex items-center justify-between rounded-2xl bg-chip px-3 py-2">
                   <span>
                     {formatMinutes(Number(l.value))}
                     {l.tag ? <span className="text-muted"> · {l.tag}</span> : null}
@@ -153,7 +154,7 @@ export function DailyTile({ status, color }: { status: DailyStatus; color?: stri
                   <button
                     type="button"
                     aria-label="Remove session"
-                    className="px-2 text-muted"
+                    className="px-2 text-muted hover:text-bad"
                     disabled={l.id.startsWith("optimistic-")}
                     onClick={() => run({ type: "remove", id: l.id }, () => deleteLog(l.id))}
                   >

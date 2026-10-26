@@ -9,8 +9,9 @@ export default function LoginPage() {
   return (
     <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 px-4">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Compound</h1>
-        <p className="text-zinc-500">Small daily wins that compound.</p>
+        <span className="label">Daily tracker</span>
+        <h1 className="font-serif text-6xl italic tracking-tight">Compound</h1>
+        <p className="text-muted">Small daily wins that compound.</p>
       </div>
       <form action={formAction} className="flex flex-col gap-3">
         <input
@@ -19,7 +20,7 @@ export default function LoginPage() {
           autoComplete="email"
           placeholder="Email"
           required
-          className="rounded-xl border border-zinc-300 bg-transparent px-4 py-3 dark:border-zinc-700"
+          className="rounded-full border border-line bg-card px-5 py-3 outline-none focus:border-accent"
         />
         <input
           name="password"
@@ -27,15 +28,15 @@ export default function LoginPage() {
           autoComplete="current-password"
           placeholder="Password"
           required
-          className="rounded-xl border border-zinc-300 bg-transparent px-4 py-3 dark:border-zinc-700"
+          className="rounded-full border border-line bg-card px-5 py-3 outline-none focus:border-accent"
         />
         <button
           disabled={pending}
-          className="rounded-xl bg-zinc-900 px-4 py-3 font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+          className="rounded-full bg-accent px-4 py-3 font-semibold text-on-accent disabled:opacity-50"
         >
           {pending ? "Signing in…" : "Sign in"}
         </button>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-bad">{error}</p>}
       </form>
     </main>
   );

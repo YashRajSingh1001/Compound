@@ -77,9 +77,12 @@ export function dailyStatus(
   let extraRest = false;
   const allowance = target.rules.rest_days_per_week;
   if (allowance !== undefined && logs.some((l) => l.tag === REST_TAG)) {
+    const start = weekStart(date);
     const restDaysSoFar = new Set(
       weekLogs
-        .filter((l) => l.target_id === target.id && l.tag === REST_TAG && l.log_date <= date)
+        .filter(
+          (l) => l.target_id === target.id && l.tag === REST_TAG && l.log_date >= start && l.log_date <= date,
+        )
         .map((l) => l.log_date),
     ).size;
     extraRest = restDaysSoFar > allowance;
@@ -95,6 +98,31 @@ export function dailyStatus(
     logs,
     extraRest,
   };
+}
+
+/** How many daily non-negotiables were done on `date`. */
+export function dayScore(targets: Target[], logs: DailyLog[], date: string): { done: number; total: number } {
+  const daily = targets.filter((t) => t.kind === "daily");
+  const done = daily.filter((t) => dailyStatus(t, targets, logs, date).done).length;
+  return { done, total: daily.length };
+}
+
+/**
+ * Consecutive green days ending today — or ending yesterday while today is
+ * still in progress, so the streak doesn't read 0 every morning.
+ */
+export function currentStreak(targets: Target[], logs: DailyLog[], today: string, maxDays: number): number {
+  const green = (date: string) => {
+    const { done, total } = dayScore(targets, logs, date);
+    return total > 0 && done === total;
+  };
+  let day = green(today) ? today : addDays(today, -1);
+  let streak = 0;
+  while (streak < maxDays && green(day)) {
+    streak += 1;
+    day = addDays(day, -1);
+  }
+  return streak;
 }
 
 // ---------------------------------------------------------------------------
@@ -140,8 +168,10 @@ export function weeklyProgress(
   const expected = goal * share;
 
   const gap = actual - expected;
+  // Counts move in whole steps: being 0.4 of a reel short isn't "behind".
+  const slack = target.metric === "count" ? Math.max(goal * 0.05, 1) : goal * 0.05;
   const status: PaceStatus =
-    actual >= goal ? "done" : gap >= goal * 0.1 ? "ahead" : gap >= -goal * 0.05 ? "on_pace" : "behind";
+    actual >= goal ? "done" : gap >= goal * 0.1 ? "ahead" : gap >= -slack ? "on_pace" : "behind";
 
   return {
     target,

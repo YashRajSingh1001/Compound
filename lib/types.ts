@@ -9,6 +9,7 @@ export type Area = {
 };
 
 export type TargetRules = {
+  icon?: string;
   weekend_min?: number;
   rest_days_per_week?: number;
   tags?: string[];
