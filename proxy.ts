@@ -44,10 +44,11 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Everything except API routes, Next internals, static files and
-    // /.well-known. Those must answer 404, not redirect to the login page:
-    // Claude.ai probes /.well-known/oauth-* and reads a redirect as "this
-    // server has OAuth sign-in", while the MCP server uses a secret URL instead.
-    "/((?!api|_next/static|_next/image|\\.well-known|favicon.ico|.*\\.(?:png|svg|ico|webmanifest)$).*)",
+    // Everything except API routes, Next internals, static files, and the
+    // OAuth addresses MCP clients probe (/.well-known/*, plus the fallback
+    // /register, /authorize and /token). Those must answer 404, not redirect
+    // to the login page: Claude.ai reads a redirect as "this server has OAuth
+    // sign-in", while the MCP server uses a secret URL instead.
+    "/((?!api|_next/static|_next/image|\\.well-known|(?:register|authorize|token)(?:/|$)|favicon.ico|.*\\.(?:png|svg|ico|webmanifest)$).*)",
   ],
 };
