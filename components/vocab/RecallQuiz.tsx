@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { gradeAnswers } from "@/app/(app)/vocab/actions";
 import type { GradeResult } from "@/lib/types";
+import { DictateButton } from "../DictateButton";
 
 export type QuizWord = { id: string; word: string; part_of_speech: string | null; meaning: string; box: number };
 
@@ -79,6 +80,7 @@ export function RecallQuiz({ words, date, mode }: { words: QuizWord[]; date: str
                   {result.feedback && <p className="text-sm text-muted italic">{result.feedback}</p>}
                 </>
               ) : (
+                <div className="flex items-start gap-2">
                 <textarea
                   id={`answer-${w.id}`}
                   rows={2}
@@ -88,6 +90,13 @@ export function RecallQuiz({ words, date, mode }: { words: QuizWord[]; date: str
                   disabled={pending}
                   className="w-full resize-none rounded-xl border border-line bg-background px-3 py-2 text-[15px] outline-none transition focus:border-accent"
                 />
+                <DictateButton
+                  compact
+                  label={`Say what ${w.word} means`}
+                  prompt={`The meaning of the word "${w.word}".`}
+                  onText={(spoken) => setAnswers((a) => ({ ...a, [w.id]: a[w.id]?.trim() ? `${a[w.id].trim()} ${spoken}` : spoken }))}
+                />
+                </div>
               )}
             </li>
           );

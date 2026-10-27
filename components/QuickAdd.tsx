@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { addTask, parseQuickAdd, type NewTask } from "@/app/actions";
 import type { Area } from "@/lib/types";
+import { DictateButton } from "./DictateButton";
 
 /**
  * Natural-language add: type "renew car insurance by friday", Groq fills in
@@ -128,6 +129,7 @@ export function QuickAdd({ date, areas, compact = false }: { date: string; areas
           compact ? "basis-40" : "basis-full sm:basis-auto"
         }`}
       />
+      <DictateButton compact label="Say a to-do" onText={(spoken) => setText((t) => (t.trim() ? `${t.trim()} ${spoken}` : spoken))} />
       {!compact && (
         <select
           aria-label="Category"
