@@ -113,7 +113,9 @@ async function Todo({ searchParams }: { searchParams: PageProps<"/todo">["search
         <section className={`${card} flex flex-col lg:col-span-7`}>
           <div className="flex items-baseline justify-between">
             <span className="label">Finished log</span>
-            <a href="/api/export/tasks" className="text-sm font-medium text-accent">
+            {/* A file download, not a page: a plain link is right here. */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a href="/api/export/tasks" className="text-sm font-medium text-accent" title="All to-dos as CSV">
               Export CSV
             </a>
           </div>

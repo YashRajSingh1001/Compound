@@ -30,7 +30,9 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const isLoginPage = request.nextUrl.pathname.startsWith("/login");
-  if (!user && !isLoginPage) {
+  // The demo is public: generated data only, nothing from the database.
+  const isPublic = request.nextUrl.pathname === "/demo" || request.nextUrl.pathname.startsWith("/demo/");
+  if (!user && !isLoginPage && !isPublic) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
   if (user && isLoginPage) {

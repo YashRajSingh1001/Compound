@@ -19,23 +19,27 @@ function longDate(iso: string): string {
     .replace(",", " ·");
 }
 
-export function TodayHeader({ date }: { date: string }) {
+export function TodayHeader({ date, showToggle = true }: { date: string; showToggle?: boolean }) {
   return (
     <header className="flex items-end justify-between gap-4">
-      <div className="flex flex-col gap-1">
-        <span className="label">{longDate(date)}</span>
+      <div className="flex min-w-0 flex-col gap-1">
+        <span className="label truncate">{longDate(date)}</span>
         <h1 className="font-serif text-5xl leading-none italic tracking-tight lg:text-6xl">Today</h1>
       </div>
-      <div className="flex items-center gap-2.5">
+      <div className="flex shrink-0 items-center gap-2.5">
         <Link
           href="/check-in"
-          className="hidden h-11 items-center rounded-full bg-accent px-5 text-sm font-semibold text-on-accent transition active:scale-95 sm:flex"
+          className="flex h-11 items-center rounded-full bg-accent px-4 text-sm font-semibold whitespace-nowrap text-on-accent transition active:scale-95 sm:px-5"
         >
-          Evening check-in
+          <span className="hidden sm:inline">Evening&nbsp;</span>
+          <span className="sm:hidden">Check-in</span>
+          <span className="hidden sm:inline">check-in</span>
         </Link>
-        <div className="lg:hidden">
-          <ThemeToggle />
-        </div>
+        {showToggle && (
+          <div className="lg:hidden">
+            <ThemeToggle />
+          </div>
+        )}
       </div>
     </header>
   );

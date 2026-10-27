@@ -250,3 +250,84 @@ export function milestoneProgress(
     latestDate: null,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Adaptive targets
+// ---------------------------------------------------------------------------
+
+/** Two weeks in a row under this share of the goal → suggest lowering it. */
+export const LOWER_BELOW = 0.6;
+/** Two weeks in a row above this share → suggest raising it. */
+export const RAISE_ABOVE = 0.9;
+
+export type TargetSuggestion = {
+  target: Target;
+  direction: "lower" | "raise";
+  /** Actual amount in each of the last two full weeks, oldest first. */
+  weeks: { start: string; actual: number; share: number }[];
+  suggestedMin: number;
+  suggestedMax: number | null;
+  reason: string;
+};
+
+/** Minutes snap to 15-minute steps, counts to whole numbers (at least 1). */
+function niceValue(target: Target, value: number): number {
+  return target.metric === "minutes" ? Math.max(15, Math.round(value / 15) * 15) : Math.max(1, Math.round(value));
+}
+
+/**
+ * Looks at the last two complete weeks of each weekly target. Never changes
+ * anything: it only proposes, and skips targets decided on this week or too
+ * new to have two full weeks of history.
+ */
+export function suggestTargets(
+  targets: Target[],
+  logs: DailyLog[],
+  date: string,
+  decidedThisWeek: Set<string>,
+  describe: (target: Target, amount: number) => string,
+): TargetSuggestion[] {
+  const thisWeek = weekStart(date);
+  const starts = [addDays(thisWeek, -14), addDays(thisWeek, -7)];
+  const out: TargetSuggestion[] = [];
+
+  for (const target of targets) {
+    const goal = target.target_min ?? 0;
+    if (target.kind !== "weekly" || goal <= 0 || decidedThisWeek.has(target.id)) continue;
+    // Both weeks must start after the target existed, or it would look like zero effort.
+    if (!target.created_at || starts[0] < target.created_at.slice(0, 10)) continue;
+
+    const weeks = starts.map((start) => {
+      const actual = weeklyProgress(target, targets, logs, addDays(start, 6)).actual;
+      return { start, actual, share: actual / goal };
+    });
+
+    let direction: "lower" | "raise" | null = null;
+    let suggested = goal;
+    if (weeks.every((w) => w.share < LOWER_BELOW)) {
+      direction = "lower";
+      const avg = (weeks[0].actual + weeks[1].actual) / 2;
+      // A bit above what you actually did, but never below half the old goal.
+      suggested = niceValue(target, Math.max(avg * 1.15, goal * 0.5));
+    } else if (weeks.every((w) => w.share > RAISE_ABOVE)) {
+      direction = "raise";
+      suggested = niceValue(target, goal * 1.15);
+      if (suggested === goal) suggested = niceValue(target, goal + (target.metric === "minutes" ? 15 : 1));
+    }
+    if (!direction || suggested === goal) continue;
+
+    const shift = suggested - goal;
+    const pct = (s: number) => `${Math.round(s * 100)}%`;
+    out.push({
+      target,
+      direction,
+      weeks,
+      suggestedMin: suggested,
+      suggestedMax: target.target_max !== null ? Math.max(target.target_max + shift, suggested) : null,
+      reason: `${describe(target, weeks[0].actual)} and ${describe(target, weeks[1].actual)} of ${describe(target, goal)}${
+        target.metric === "minutes" ? "" : ` ${target.unit ?? ""}`
+      } the last two weeks (${pct(weeks[0].share)}, ${pct(weeks[1].share)}).`,
+    });
+  }
+  return out;
+}

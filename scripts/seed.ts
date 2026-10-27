@@ -94,7 +94,8 @@ const TARGETS: TargetSeed[] = [
   },
   {
     key: "journal_daily", area: "journal", name: "Journal", kind: "daily", metric: "bool",
-    rules: { icon: "✍️" },
+    // journal: ticked automatically when a journal entry is saved (app or chat).
+    rules: { icon: "✍️", journal: true },
   },
 
   // Weekly targets.

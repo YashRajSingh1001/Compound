@@ -177,3 +177,40 @@ export async function generateVerdict(date: string): Promise<{ text: string } | 
     return { error: err instanceof Error ? err.message : "Something went wrong" };
   }
 }
+
+/**
+ * Accept or dismiss an adaptive target suggestion. Accepting changes the
+ * target (its old numbers go to target_history automatically); either way the
+ * decision is recorded, so the same target isn't suggested again this week.
+ */
+export async function decideSuggestion(
+  targetId: string,
+  decision: "accepted" | "dismissed",
+  suggestion: { direction: "lower" | "raise"; suggestedMin: number; suggestedMax: number | null; reason: string },
+) {
+  const supabase = await createClient();
+  if (decision === "accepted") {
+    check(
+      (
+        await supabase
+          .from("targets")
+          .update({ target_min: suggestion.suggestedMin, target_max: suggestion.suggestedMax })
+          .eq("id", targetId)
+      ).error,
+    );
+  }
+  check(
+    (
+      await supabase.from("target_suggestions").insert({
+        target_id: targetId,
+        direction: suggestion.direction,
+        suggested_min: suggestion.suggestedMin,
+        suggested_max: suggestion.suggestedMax,
+        reason: suggestion.reason,
+        status: decision,
+        resolved_at: new Date().toISOString(),
+      })
+    ).error,
+  );
+  refresh();
+}

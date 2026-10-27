@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { DaySnapshot } from "@/lib/data";
 import { formatDay } from "@/lib/dates";
-import { vocabLink } from "@/lib/vocab-link";
+import { tileLink } from "@/lib/tile-links";
 import { DailyTile } from "./DailyTile";
 import { MilestoneQuick } from "./MilestoneQuick";
 import { TaskList } from "./TaskList";
@@ -25,7 +25,7 @@ export function CheckInFlow({ day }: { day: DaySnapshot }) {
       hint: "Did the basics happen today?",
       show: day.daily.length > 0,
       body: day.daily.map((status, i) => (
-        <DailyTile key={status.target.id} status={status} color={color(status.target.area_id)} index={i} {...vocabLink(status.target, day.vocab)} />
+        <DailyTile key={status.target.id} status={status} color={color(status.target.area_id)} index={i} {...tileLink(status.target, day)} />
       )),
     },
     {

@@ -2,28 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { NAV } from "@/lib/nav";
 import { ThemeToggle } from "./ThemeToggle";
+const RAIL = [NAV.today, NAV.todo, NAV.journal, NAV.vocab, NAV.watchlist, NAV.progress, NAV.checkIn];
+const TABS = [NAV.today, NAV.todo, NAV.journal, NAV.progress, NAV.more];
+// Pages reached through "More" keep the More tab lit on phones.
+const UNDER_MORE = ["/more", NAV.vocab.href, NAV.watchlist.href, NAV.checkIn.href, "/export"];
 
-const LINKS = [
-  { href: "/", label: "Today", icon: "M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1Z" },
-  { href: "/todo", label: "To-do", icon: "M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2" },
-  { href: "/vocab", label: "Vocab", icon: "M4 18 8.5 6h1L14 18M5.5 14h7M19.5 10v8M17 10.5a2.5 2.5 0 1 1 0 5" },
-  {
-    href: "/check-in",
-    label: "Check-in",
-    icon: "M9 3h6v3H9zM7 4.5H6a1 1 0 0 0-1 1V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V5.5a1 1 0 0 0-1-1h-1M9 13.5l2 2 4-4",
-  },
-];
-
-function Icon({ d }: { d: string }) {
+export function NavIcon({ d, className = "size-[22px]" }: { d: string; className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className="size-[22px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d={d} />
     </svg>
   );
 }
 
-/** Left rail on laptop screens. */
+/** Left rail on laptop screens: every page. */
 export function SideRail() {
   const pathname = usePathname();
   return (
@@ -38,7 +32,7 @@ export function SideRail() {
       >
         C
       </Link>
-      {LINKS.map((link) => {
+      {RAIL.map((link) => {
         const active = pathname === link.href;
         return (
           <Link
@@ -50,7 +44,7 @@ export function SideRail() {
               active ? "bg-accent-soft text-accent" : "text-muted hover:text-foreground"
             }`}
           >
-            <Icon d={link.icon} />
+            <NavIcon d={link.icon} />
           </Link>
         );
       })}
@@ -60,14 +54,14 @@ export function SideRail() {
   );
 }
 
-/** Tab bar on phones. */
+/** Tab bar on phones: the four most used pages plus More. */
 export function BottomNav() {
   const pathname = usePathname();
   return (
     <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-background/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
       <div className="mx-auto flex max-w-lg">
-        {LINKS.map((link) => {
-          const active = pathname === link.href;
+        {TABS.map((link) => {
+          const active = link === NAV.more ? UNDER_MORE.includes(pathname) : pathname === link.href;
           return (
             <Link
               key={link.href}
@@ -76,7 +70,7 @@ export function BottomNav() {
                 active ? "text-accent" : "text-muted"
               }`}
             >
-              <Icon d={link.icon} />
+              <NavIcon d={link.icon} />
               {link.label}
             </Link>
           );

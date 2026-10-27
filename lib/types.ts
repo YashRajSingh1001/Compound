@@ -16,6 +16,8 @@ export type TargetRules = {
   icon?: string;
   /** Marks the daily vocab target: which word groups to learn, how many each. */
   vocab?: { groups: VocabGroup[] };
+  /** Marks the daily journal target: saving an entry ticks it. */
+  journal?: boolean;
   weekend_min?: number;
   rest_days_per_week?: number;
   tags?: string[];
@@ -40,6 +42,7 @@ export type Target = {
   rules: TargetRules;
   notes: string | null;
   sort: number;
+  created_at?: string;
 };
 
 export type Task = {
