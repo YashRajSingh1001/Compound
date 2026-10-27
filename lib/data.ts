@@ -22,8 +22,10 @@ export async function getToday(): Promise<string> {
   return todayIn(isValidTimeZone(tz) ? tz : "UTC");
 }
 
-// How far back logs are loaded: enough for streaks and this week's pace.
-const HISTORY_DAYS = 120;
+// The heatmap shows this many weeks, ending with the current one.
+export const HEATMAP_WEEKS = 18;
+// How far back logs are loaded: the heatmap's first Monday, at most.
+const HISTORY_DAYS = HEATMAP_WEEKS * 7;
 
 export type WeekDay = { date: string; done: number; total: number };
 
@@ -33,13 +35,19 @@ export type DaySnapshot = {
   daily: DailyStatus[];
   weekly: WeeklyProgress[];
   milestones: MilestoneProgress[];
-  /** Open tasks due by this date (or undated) plus tasks finished on it. */
+  /** Open tasks due by this date (or undated; earlier ones carry over) plus tasks finished on it. */
   tasks: Task[];
   green: boolean;
   /** Consecutive green days (see currentStreak). */
   streak: number;
+  /** Longest run of green days in the loaded history. */
+  bestStreak: number;
   /** Monday → Sunday of this week, with non-negotiables done per day. */
   week: WeekDay[];
+  /** HEATMAP_WEEKS whole weeks, Monday first; days after `date` have total 0. */
+  heat: WeekDay[];
+  /** Today's vocab progress, for the Vocab tile. */
+  vocab: { learned: number; perDay: number; due: number };
   verdict: Verdict | null;
 };
 
@@ -47,8 +55,8 @@ export type DaySnapshot = {
 export async function loadDay(date: string): Promise<DaySnapshot> {
   const supabase = await createClient();
 
-  const [areas, targets, logRows, openTasks, doneTasks, milestoneTasks, verdict] = await Promise.all([
-    supabase.from("areas").select("id, name, color, sort").eq("active", true).order("sort"),
+  const [areas, targets, logRows, openTasks, doneTasks, milestoneTasks, verdict, vocabToday, vocabDue] = await Promise.all([
+    supabase.from("areas").select("id, name, color, sort, for_tasks").eq("active", true).order("sort"),
     supabase
       .from("targets")
       .select("id, area_id, name, kind, metric, target_min, target_max, unit, due_date, rollup_from, rules, notes, sort")
@@ -73,12 +81,14 @@ export async function loadDay(date: string): Promise<DaySnapshot> {
       .select("*")
       .is("milestone_id", null)
       .eq("status", "done")
-      .eq("due_date", date),
+      .eq("finished_on", date),
     supabase.from("tasks").select("*").not("milestone_id", "is", null).order("sort"),
     supabase.from("verdicts").select("verdict_date, text, model").eq("verdict_date", date).maybeSingle(),
+    supabase.from("vocab_words").select("id", { count: "exact", head: true }).eq("learned_on", date),
+    supabase.from("vocab_words").select("id", { count: "exact", head: true }).lte("next_review", date).lt("learned_on", date),
   ]);
 
-  for (const r of [areas, targets, logRows, openTasks, doneTasks, milestoneTasks, verdict]) {
+  for (const r of [areas, targets, logRows, openTasks, doneTasks, milestoneTasks, verdict, vocabToday, vocabDue]) {
     if (r.error) throw new Error(r.error.message);
   }
 
@@ -106,6 +116,18 @@ export async function loadDay(date: string): Promise<DaySnapshot> {
     .filter((t) => t.kind === "daily")
     .map((t) => dailyStatus(t, allTargets, logs, date));
 
+  const heatStart = addDays(weekStart(date), -(HEATMAP_WEEKS - 1) * 7);
+  const heat: WeekDay[] = Array.from({ length: HEATMAP_WEEKS * 7 }, (_, i) => {
+    const day = addDays(heatStart, i);
+    return { date: day, ...(day <= date ? dayScore(allTargets, logs, day) : { done: 0, total: 0 }) };
+  });
+  let bestStreak = 0;
+  let run = 0;
+  for (const day of heat) {
+    run = day.total > 0 && day.done === day.total ? run + 1 : 0;
+    bestStreak = Math.max(bestStreak, run);
+  }
+
   return {
     date,
     areas: (areas.data ?? []) as Area[],
@@ -119,10 +141,55 @@ export async function loadDay(date: string): Promise<DaySnapshot> {
     tasks: [...((openTasks.data ?? []) as Task[]), ...((doneTasks.data ?? []) as Task[])],
     green: daily.length > 0 && daily.every((d) => d.done),
     streak: currentStreak(allTargets, logs, date, HISTORY_DAYS),
-    week: Array.from({ length: 7 }, (_, i) => {
-      const day = addDays(weekStart(date), i);
-      return { date: day, ...(day <= date ? dayScore(allTargets, logs, day) : { done: 0, total: daily.length }) };
-    }),
+    bestStreak,
+    week: heat.slice(-7).map((d) => (d.date > date ? { ...d, total: daily.length } : d)),
+    heat,
+    vocab: {
+      learned: vocabToday.count ?? 0,
+      perDay: (allTargets.find((t) => t.rules.vocab)?.rules.vocab?.groups ?? []).reduce((a, g) => a + g.count, 0),
+      due: vocabDue.count ?? 0,
+    },
     verdict: (verdict.data as Verdict | null) ?? null,
+  };
+}
+
+export type TodoSnapshot = {
+  date: string;
+  areas: Area[];
+  /** Every open to-do, upcoming ones included. */
+  open: Task[];
+  /** Finished in the last FINISHED_DAYS days, newest first. */
+  finished: Task[];
+};
+
+// Long enough for the 6-week same-day trend.
+const FINISHED_DAYS = 42;
+
+export async function loadTodo(date: string): Promise<TodoSnapshot> {
+  const supabase = await createClient();
+  const [areas, open, finished] = await Promise.all([
+    supabase.from("areas").select("id, name, color, sort, for_tasks").eq("active", true).order("sort"),
+    supabase
+      .from("tasks")
+      .select("*")
+      .is("milestone_id", null)
+      .in("status", ["todo", "in_progress"])
+      .order("listed_on")
+      .order("created_at"),
+    supabase
+      .from("tasks")
+      .select("*")
+      .is("milestone_id", null)
+      .eq("status", "done")
+      .gte("finished_on", addDays(date, -FINISHED_DAYS))
+      .order("finished_on", { ascending: false })
+      .order("completed_at", { ascending: false }),
+  ]);
+  for (const r of [areas, open, finished]) if (r.error) throw new Error(r.error.message);
+  return {
+    date,
+    areas: (areas.data ?? []) as Area[],
+    open: (open.data ?? []) as Task[],
+    finished: (finished.data ?? []) as Task[],
   };
 }

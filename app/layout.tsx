@@ -23,12 +23,20 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   title: "Compound",
   description: "Small daily wins that compound.",
+  applicationName: "Compound",
+  // iPhone home-screen app: full screen, content runs under the status bar.
+  appleWebApp: { capable: true, title: "Compound", statusBarStyle: "black-translucent" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f3ed" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d0c0a" },
+  ],
 };
 
 // Applies the saved light/dark choice before the first paint, so the page

@@ -1,40 +1,66 @@
 "use client";
 
-import { useOptimistic, useRef, useTransition } from "react";
-import { addTask, moveTaskToTomorrow, setTaskDone } from "@/app/actions";
+import { useOptimistic, useTransition } from "react";
+import { moveTaskToTomorrow, setTaskDone } from "@/app/actions";
 import { formatDay } from "@/lib/dates";
-import type { Task } from "@/lib/types";
+import { carriedDays } from "@/lib/todo";
+import type { Area, Task } from "@/lib/types";
+import { QuickAdd } from "./QuickAdd";
 
-type TaskChange = { type: "done"; id: string; done: boolean } | { type: "hide"; id: string } | { type: "add"; title: string };
+type TaskChange = { type: "done"; id: string; done: boolean } | { type: "hide"; id: string };
+
+/** Category chip in the area's colour. */
+export function CategoryChip({ area }: { area: Area }) {
+  return (
+    <span
+      className="rounded-full px-2 py-0.5"
+      style={{ color: area.color, background: `color-mix(in srgb, ${area.color} 16%, transparent)` }}
+    >
+      {area.name}
+    </span>
+  );
+}
+
+/** "Carried 2 days": amber for a day or two, red from three. */
+export function CarryBadge({ days }: { days: number }) {
+  if (days <= 0) return null;
+  return (
+    <span className={`rounded-full px-2 py-0.5 ${days >= 3 ? "bg-bad-soft text-bad" : "bg-warn-soft text-warn"}`}>
+      Carried {days} {days === 1 ? "day" : "days"}
+    </span>
+  );
+}
 
 /**
- * Today's tasks with a plain add box. (Step 5 upgrades the add box to
- * natural-language quick add.) `canMove` adds "→ tomorrow" for the check-in.
+ * Open to-dos (unfinished ones carry over day to day) with quick add below.
+ * `canMove` adds "→ tomorrow" for the check-in; `showListed` adds the day
+ * each task was listed.
  */
-export function TaskList({ tasks, date, canMove = false }: { tasks: Task[]; date: string; canMove?: boolean }) {
+export function TaskList({
+  tasks,
+  date,
+  areas = [],
+  canMove = false,
+  flat = false,
+  showListed = false,
+  showAdd = true,
+}: {
+  tasks: Task[];
+  date: string;
+  areas?: Area[];
+  canMove?: boolean;
+  /** Drop the list's own card when it already sits inside one. */
+  flat?: boolean;
+  showListed?: boolean;
+  showAdd?: boolean;
+}) {
   const [, startTransition] = useTransition();
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const [items, apply] = useOptimistic(tasks, (current: Task[], change: TaskChange) => {
     if (change.type === "done") {
       return current.map((t) => (t.id === change.id ? { ...t, status: change.done ? ("done" as const) : ("todo" as const) } : t));
     }
-    if (change.type === "hide") return current.filter((t) => t.id !== change.id);
-    return [
-      ...current,
-      {
-        id: `optimistic-${Math.random()}`,
-        title: change.title,
-        area_id: null,
-        milestone_id: null,
-        due_date: date,
-        est_minutes: null,
-        status: "todo" as const,
-        notes: null,
-        sort: 0,
-        completed_at: null,
-      },
-    ];
+    return current.filter((t) => t.id !== change.id);
   });
 
   function run(change: TaskChange, action: () => Promise<void>) {
@@ -44,29 +70,22 @@ export function TaskList({ tasks, date, canMove = false }: { tasks: Task[]; date
     });
   }
 
-  function onAdd(formData: FormData) {
-    const title = String(formData.get("title") ?? "").trim();
-    if (!title) return;
-    inputRef.current!.value = "";
-    run({ type: "add", title }, () => addTask(title, date));
-  }
-
   return (
     <div className="flex flex-col gap-2">
-      <ul className="flex flex-col overflow-hidden rounded-3xl border border-line bg-card">
+      <ul className={`flex flex-col ${flat ? "-mx-1" : "overflow-hidden rounded-3xl border border-line bg-card"}`}>
         {items.length === 0 && (
-          <li className="px-4 py-5 text-center text-sm text-muted">Nothing due today. Enjoy the space, or add one below.</li>
+          <li className="px-4 py-5 text-center text-sm text-muted">Nothing open. Enjoy the space, or add one below.</li>
         )}
         {items.map((task) => {
           const done = task.status === "done";
-          const overdue = !done && task.due_date && task.due_date < date;
-          const optimistic = task.id.startsWith("optimistic-");
+          const carried = done ? 0 : carriedDays(task, date);
+          const area = areas.find((a) => a.id === task.area_id);
+          const upcoming = !done && task.due_date && task.due_date > date;
           return (
-            <li key={task.id} className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
+            <li key={task.id} className={`flex items-center gap-3 border-b border-line py-3 last:border-b-0 ${flat ? "px-1" : "px-4"}`}>
               <button
                 type="button"
                 aria-label={done ? "Mark not done" : "Mark done"}
-                disabled={optimistic}
                 onClick={() => run({ type: "done", id: task.id, done: !done }, () => setTaskDone(task.id, !done, date))}
                 className={`flex size-7 shrink-0 items-center justify-center rounded-full border-2 text-sm transition active:scale-90 ${
                   done ? "border-good bg-good text-card" : "border-line hover:border-accent"
@@ -76,9 +95,16 @@ export function TaskList({ tasks, date, canMove = false }: { tasks: Task[]; date
               </button>
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className={done ? "text-muted line-through" : ""}>{task.title}</span>
-                {overdue && <span className="text-xs text-bad">Due {formatDay(task.due_date!)}</span>}
+                {(carried > 0 || area || upcoming || showListed) && (
+                  <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-medium">
+                    {area && <CategoryChip area={area} />}
+                    <CarryBadge days={carried} />
+                    {upcoming && <span className="rounded-full bg-chip px-2 py-0.5 text-muted">Due {formatDay(task.due_date!)}</span>}
+                    {showListed && task.listed_on && <span className="text-muted">Listed {formatDay(task.listed_on)}</span>}
+                  </span>
+                )}
               </span>
-              {canMove && !done && !optimistic && (
+              {canMove && !done && (
                 <button
                   type="button"
                   onClick={() => run({ type: "hide", id: task.id }, () => moveTaskToTomorrow(task.id, date))}
@@ -91,16 +117,7 @@ export function TaskList({ tasks, date, canMove = false }: { tasks: Task[]; date
           );
         })}
       </ul>
-      <form action={onAdd} className="flex gap-2">
-        <input
-          ref={inputRef}
-          name="title"
-          placeholder="Add a task for today…"
-          autoComplete="off"
-          className="min-h-12 flex-1 rounded-full border border-line bg-card px-5 outline-none transition focus:border-accent"
-        />
-        <button className="min-h-12 rounded-full bg-accent px-5 font-semibold text-on-accent active:scale-95">Add</button>
-      </form>
+      {showAdd && <QuickAdd date={date} areas={areas} compact />}
     </div>
   );
 }

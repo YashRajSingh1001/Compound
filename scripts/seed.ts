@@ -28,13 +28,18 @@ const db = createClient(url, serviceKey, { auth: { persistSession: false } });
 // Seed data
 // ---------------------------------------------------------------------------
 
+// for_tasks: shows up as a to-do category.
 const AREAS = [
-  { key: "study", name: "Study", color: "#6366f1" },
-  { key: "fitness", name: "Fitness", color: "#22c55e" },
-  { key: "vocab", name: "Vocab", color: "#f59e0b" },
-  { key: "journal", name: "Journal", color: "#f43f5e" },
-  { key: "content", name: "Content", color: "#ec4899" },
-  { key: "news", name: "Tech news", color: "#0ea5e9" },
+  { key: "study", name: "Study", color: "#6366f1", for_tasks: true },
+  { key: "fitness", name: "Fitness", color: "#22c55e", for_tasks: false },
+  { key: "vocab", name: "Vocab", color: "#f59e0b", for_tasks: false },
+  { key: "journal", name: "Journal", color: "#f43f5e", for_tasks: false },
+  { key: "content", name: "Content", color: "#ec4899", for_tasks: true },
+  { key: "news", name: "Tech news", color: "#0ea5e9", for_tasks: false },
+  { key: "personal", name: "Personal", color: "#14b8a6", for_tasks: true },
+  { key: "work", name: "Work", color: "#c08a3e", for_tasks: true },
+  { key: "health", name: "Health", color: "#65a30d", for_tasks: true },
+  { key: "errands", name: "Errands", color: "#f97316", for_tasks: true },
 ] as const;
 
 type AreaKey = (typeof AREAS)[number]["key"];
@@ -66,7 +71,26 @@ const TARGETS: TargetSeed[] = [
   },
   {
     key: "vocab_daily", area: "vocab", name: "Vocab", kind: "daily", metric: "bool",
-    rules: { icon: "🔤", new_words: 5, recall_test: true },
+    rules: {
+      icon: "🔤",
+      // Words per day, by group. Groq picks them; the recall test is the next day.
+      vocab: {
+        groups: [
+          {
+            name: "Tech & data",
+            count: 5,
+            brief:
+              "Terms from AI, machine learning, statistics, data science and data engineering that a working data scientist should be able to explain clearly in an interview.",
+          },
+          {
+            name: "Professional English",
+            count: 5,
+            brief:
+              "Advanced English for work and life: words that make emails, meetings, presentations and writing sharper. Real vocabulary, not business jargon or buzzwords.",
+          },
+        ],
+      },
+    },
   },
   {
     key: "journal_daily", area: "journal", name: "Journal", kind: "daily", metric: "bool",
@@ -206,7 +230,7 @@ async function main() {
   const areaRows = await must(
     db
       .from("areas")
-      .insert(AREAS.map((a, i) => ({ user_id: userId, name: a.name, color: a.color, sort: i })))
+      .insert(AREAS.map((a, i) => ({ user_id: userId, name: a.name, color: a.color, for_tasks: a.for_tasks, sort: i })))
       .select("id, name"),
   );
   const areaId = (key: AreaKey) =>

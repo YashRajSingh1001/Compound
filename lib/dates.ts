@@ -81,3 +81,8 @@ export function formatMinutes(minutes: number): string {
   const rest = m % 60;
   return rest ? `${h} h ${rest} m` : `${h} h`;
 }
+
+/** "Thursday" */
+export function weekdayName(iso: string): string {
+  return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][weekdayIndex(iso)];
+}

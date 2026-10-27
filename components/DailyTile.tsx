@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useOptimistic, useState, useTransition } from "react";
 import { addSession, deleteLog, setDayValue } from "@/app/actions";
 import { formatMinutes } from "@/lib/dates";
@@ -19,9 +20,24 @@ type LogChange = { type: "add"; log: DailyLog } | { type: "remove"; id: string }
  * - bool without tags (Vocab, Journal): tap toggles done.
  * - bool with tags (Workout): tap opens gym / run / rest.
  * - minutes (Study): tap opens session presets, split by tag.
+ * - with `href` (Vocab): tap opens its own page, which ticks it when done.
  */
-export function DailyTile({ status, color, index = 0 }: { status: DailyStatus; color?: string; index?: number }) {
+export function DailyTile({
+  status,
+  color,
+  index = 0,
+  href,
+  note,
+}: {
+  status: DailyStatus;
+  color?: string;
+  index?: number;
+  href?: string;
+  /** Replaces the default status line, e.g. "4 of 10 words · 5 to review". */
+  note?: string;
+}) {
   const { target, date, required, tags } = status;
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [tag, setTag] = useState<string | null>(tags[0] ?? null);
   const [pending, startTransition] = useTransition();
@@ -55,7 +71,9 @@ export function DailyTile({ status, color, index = 0 }: { status: DailyStatus; c
   }
 
   function onTileTap() {
-    if (target.metric === "bool" && tags.length === 0) {
+    if (href) {
+      router.push(href);
+    } else if (target.metric === "bool" && tags.length === 0) {
       const next = done ? null : 1;
       run({ type: "replace", logs: next ? [fakeLog(1, null)] : [] }, () => setDayValue(target.id, date, next));
     } else {
@@ -71,16 +89,18 @@ export function DailyTile({ status, color, index = 0 }: { status: DailyStatus; c
   }
 
   let detail: string;
-  if (target.metric === "minutes") detail = `${formatMinutes(value)} of ${formatMinutes(required)}`;
+  if (target.metric === "minutes") detail = `${Math.round(value)} of ${required} min`;
   else if (extraRest) detail = "Extra rest day this week";
   else if (tags.length) detail = loggedTag ? `Logged · ${loggedTag}` : "Not logged yet";
   else detail = done ? "Done for today" : "Not done yet";
+  if (note) detail = note;
 
-  const expandable = target.metric !== "bool" || tags.length > 0;
+  const expandable = !href && (target.metric !== "bool" || tags.length > 0);
   const ring = target.metric === "minutes" ? Math.min(value / required, 1) : done ? 1 : 0;
 
   let pill: React.ReactNode;
-  if (!expandable) pill = done ? "✓ Done" : "Done";
+  if (href) pill = done ? "✓ Done" : "Open";
+  else if (!expandable) pill = done ? "✓ Done" : "Done";
   else if (target.metric === "minutes") pill = done ? "✓ + Log" : "+ Log";
   else pill = loggedTag && !extraRest ? `✓ ${loggedTag}` : "Log";
 
@@ -106,7 +126,7 @@ export function DailyTile({ status, color, index = 0 }: { status: DailyStatus; c
             <span className={`text-sm ${extraRest ? "text-warn" : done ? "text-good" : "text-muted"}`}>{detail}</span>
           </span>
         </button>
-        <ActionPill onClick={onTileTap} active={done && !expandable} label={`${target.name}: ${expandable ? "open" : "toggle done"}`}>
+        <ActionPill onClick={onTileTap} active={done && !expandable} label={`${target.name}: ${href || expandable ? "open" : "toggle done"}`}>
           {pill}
         </ActionPill>
       </div>

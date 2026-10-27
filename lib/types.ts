@@ -6,10 +6,16 @@ export type Area = {
   name: string;
   color: string;
   sort: number;
+  /** Offered as a to-do category. */
+  for_tasks?: boolean;
 };
+
+export type VocabGroup = { name: string; count: number; brief: string };
 
 export type TargetRules = {
   icon?: string;
+  /** Marks the daily vocab target: which word groups to learn, how many each. */
+  vocab?: { groups: VocabGroup[] };
   weekend_min?: number;
   rest_days_per_week?: number;
   tags?: string[];
@@ -47,6 +53,10 @@ export type Task = {
   notes: string | null;
   sort: number;
   completed_at: string | null;
+  /** The day it was added (your timezone); carry-over counts from here. */
+  listed_on?: string;
+  finished_on?: string | null;
+  recurrence?: string | null;
 };
 
 export type DailyLog = {
@@ -62,3 +72,19 @@ export type Verdict = {
   text: string;
   model: string;
 };
+
+export type VocabWord = {
+  id: string;
+  word: string;
+  meaning: string;
+  example: string | null;
+  part_of_speech: string | null;
+  category: string | null;
+  learned_on: string;
+  box: number;
+  next_review: string;
+  times_tested: number;
+  times_correct: number;
+};
+
+export type GradeResult = { wordId: string; correct: boolean; feedback: string; boxAfter?: number };

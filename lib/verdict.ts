@@ -20,7 +20,10 @@ export function verdictInputs(day: DaySnapshot) {
     daily: day.daily.map((d) => ({
       name: d.target.name,
       done: d.done,
-      logged: d.target.metric === "bool" ? (d.logs[0]?.tag ?? (d.done ? "yes" : "no")) : amount(d.value, d.target.metric, d.target.unit),
+      logged:
+        d.target.metric === "bool"
+          ? (d.tags.length && d.logs[0]?.tag) || (d.done ? "yes" : "no")
+          : amount(d.value, d.target.metric, d.target.unit),
       required: d.target.metric === "bool" ? undefined : amount(d.required, d.target.metric, d.target.unit),
       extra_rest_day: d.extraRest || undefined,
     })),
