@@ -7,6 +7,16 @@ export const NAV = {
   journal: { href: "/journal", label: "Journal", icon: "M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM8 7h6M8 11h6M8 15h4" },
   vocab: { href: "/vocab", label: "Vocab", icon: "M4 18 8.5 6h1L14 18M5.5 14h7M19.5 10v8M17 10.5a2.5 2.5 0 1 1 0 5" },
   watchlist: { href: "/watchlist", label: "Watchlist", icon: "M3 6h18v12H3zM10 9.5v5l4-2.5z" },
+  ideas: {
+    href: "/ideas",
+    label: "Ideas",
+    icon: "M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3Z",
+  },
+  vision: {
+    href: "/vision",
+    label: "Vision",
+    icon: "M12 3l1.8 4.6L18.5 9l-4.7 1.6L12 15l-1.8-4.4L5.5 9l4.7-1.4zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z",
+  },
   progress: { href: "/progress", label: "Progress", icon: "M4 19h16M7 16v-5M12 16V8M17 16v-8" },
   checkIn: {
     href: "/check-in",

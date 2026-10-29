@@ -5,6 +5,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { signOut } from "@/app/login/actions";
 
 const ITEMS = [
+  { ...NAV.vision, sub: "Your goals in pictures" },
+  { ...NAV.ideas, sub: "Every idea, and why it came up" },
   { ...NAV.vocab, sub: "Today's words and recall test" },
   { ...NAV.watchlist, sub: "Things to watch, read or hear" },
   { ...NAV.checkIn, sub: "The 2-minute evening flow" },

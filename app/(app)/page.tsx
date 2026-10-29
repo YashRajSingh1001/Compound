@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { TodayView } from "@/components/TodayView";
 import { getToday, loadDay } from "@/lib/data";
+import { visionOfTheDay } from "@/lib/vision";
+import { loadVision } from "@/lib/vision-data";
 
 // Groq calls (verdict, vocab words, quick add) can take 10–20 s; the default limit may be shorter.
 export const maxDuration = 60;
@@ -26,5 +28,16 @@ function TodaySkeleton() {
 }
 
 async function Today() {
-  return <TodayView day={await loadDay(await getToday())} />;
+  const today = await getToday();
+  const [day, vision] = await Promise.all([loadDay(today), todaysVision(today)]);
+  return <TodayView day={day} vision={vision} />;
+}
+
+/** The vision card is a bonus: if it can't load, Today still shows. */
+async function todaysVision(today: string) {
+  try {
+    return visionOfTheDay((await loadVision(today)).items, today);
+  } catch {
+    return null;
+  }
 }

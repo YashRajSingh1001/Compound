@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { signOut } from "@/app/login/actions";
 import type { DaySnapshot } from "@/lib/snapshot";
+import type { VisionCardData } from "@/lib/vision";
 import { formatMinutes } from "@/lib/dates";
 import { lineOfTheDay } from "@/lib/quotes";
 import { tileLink } from "@/lib/tile-links";
@@ -10,6 +11,7 @@ import { TaskList } from "./TaskList";
 import { HeroCard, Heatmap, PaceCard, StreakCard, TodayHeader } from "./TodayHeader";
 import { IconBubble, ProgressBar } from "./ui";
 import { VerdictCard } from "./VerdictCard";
+import { VisionBanner } from "./VisionBanner";
 import { WeekRow } from "./WeekRow";
 
 // Bento grid: 12 columns on laptops, one column on phones. `order` puts the
@@ -20,7 +22,16 @@ const card = "rounded-3xl border border-line bg-card p-5";
  * The Today screen for one day's snapshot. No data fetching, so the public
  * demo can render it with generated data.
  */
-export function TodayView({ day, demo = false }: { day: DaySnapshot; demo?: boolean }) {
+export function TodayView({
+  day,
+  demo = false,
+  vision = null,
+}: {
+  day: DaySnapshot;
+  demo?: boolean;
+  /** Today's rotating vision board card, if there is one. */
+  vision?: VisionCardData | null;
+}) {
   const color = (areaId: string | null) => day.areas.find((a) => a.id === areaId)?.color;
   const done = day.daily.filter((d) => d.done);
   const left = day.daily.filter((d) => !d.done).map((d) => d.target.name);
@@ -63,6 +74,12 @@ export function TodayView({ day, demo = false }: { day: DaySnapshot; demo?: bool
             <DailyTile key={status.target.id} status={status} color={color(status.target.area_id)} index={i} {...tileLink(status.target, day)} />
           ))}
         </section>
+
+        {vision && (
+          <div className="order-3 lg:order-4 lg:col-span-12">
+            <VisionBanner item={vision} today={day.date} />
+          </div>
+        )}
 
         <div className="order-8 lg:order-5 lg:col-span-5">
           <Heatmap heat={day.heat} today={day.date} />

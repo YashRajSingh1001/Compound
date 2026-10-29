@@ -354,4 +354,76 @@ export function registerTools(server: McpServer) {
       return text(`Updated ${target.name}.\nBefore: ${describeTarget(target).slice(2)}\nNow: ${describeTarget(updated).slice(2)}`);
     },
   );
+
+  server.registerTool(
+    "add_idea",
+    {
+      title: "Save an idea",
+      description:
+        "Save an idea to Yash's Compound idea log. Fill in a short title, the details in his words, a category (reuse one from get_ideas when it fits, e.g. Content, Project, Career, Business), and context: why the idea came up or what it relates to, only if he said so.",
+      inputSchema: z.object({
+        title: z.string().min(1).max(140),
+        details: z.string().max(4000).optional(),
+        category: z.string().max(40).optional(),
+        context: z.string().max(200).optional().describe("Why it came up, e.g. 'while building ReadKernel'"),
+      }),
+    },
+    async (args: { title: string; details?: string; category?: string; context?: string }) => {
+      const ctx = context();
+      check(
+        await ctx.db.from("ideas").insert({
+          user_id: ctx.userId,
+          title: args.title.trim(),
+          details: args.details?.trim() || null,
+          category: args.category?.trim() || null,
+          context: args.context?.trim() || null,
+          source: "chat",
+        }),
+      );
+      return text(`Saved idea "${args.title.trim()}"${args.category ? ` under ${args.category}` : ""}.`);
+    },
+  );
+
+  server.registerTool(
+    "get_ideas",
+    {
+      title: "Get ideas",
+      description: "List Yash's saved ideas with category, why they came up and status. Optionally filter by category or status.",
+      inputSchema: z.object({
+        category: z.string().optional(),
+        status: z.enum(["new", "exploring", "parked", "done"]).optional(),
+      }),
+      annotations: { readOnlyHint: true },
+    },
+    async (args: { category?: string; status?: string }) => {
+      const ctx = context();
+      let query = ctx.db
+        .from("ideas")
+        .select("title, details, category, context, status, created_at")
+        .eq("user_id", ctx.userId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (args.category) query = query.ilike("category", args.category);
+      if (args.status) query = query.eq("status", args.status);
+      const ideas = check(await query) as {
+        title: string;
+        details: string | null;
+        category: string | null;
+        context: string | null;
+        status: string;
+        created_at: string;
+      }[];
+      if (!ideas.length) return text("No ideas saved yet with those filters.");
+      return text(
+        ideas
+          .map(
+            (i) =>
+              `- ${i.title} [${i.category ?? "no category"} · ${i.status} · ${formatDay(i.created_at.slice(0, 10))}]` +
+              (i.context ? `\n  Why: ${i.context}` : "") +
+              (i.details ? `\n  ${i.details}` : ""),
+          )
+          .join("\n"),
+      );
+    },
+  );
 }

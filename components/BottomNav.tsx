@@ -4,10 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV } from "@/lib/nav";
 import { ThemeToggle } from "./ThemeToggle";
-const RAIL = [NAV.today, NAV.todo, NAV.journal, NAV.vocab, NAV.watchlist, NAV.progress, NAV.checkIn];
+
+const RAIL = [NAV.today, NAV.todo, NAV.journal, NAV.vision, NAV.ideas, NAV.vocab, NAV.watchlist, NAV.progress, NAV.checkIn];
 const TABS = [NAV.today, NAV.todo, NAV.journal, NAV.progress, NAV.more];
 // Pages reached through "More" keep the More tab lit on phones.
-const UNDER_MORE = ["/more", NAV.vocab.href, NAV.watchlist.href, NAV.checkIn.href, "/export"];
+const UNDER_MORE = ["/more", NAV.vision.href, NAV.ideas.href, NAV.vocab.href, NAV.watchlist.href, NAV.checkIn.href, "/export"];
 
 export function NavIcon({ d, className = "size-[22px]" }: { d: string; className?: string }) {
   return (

@@ -14,6 +14,8 @@ const DESCRIPTIONS: Record<(typeof EXPORT_TABLES)[number], string> = {
   vocab_reviews: "Every recall answer and its grade",
   watchlist: "Things to watch, read or listen to",
   verdicts: "Daily verdicts and what they were shown",
+  ideas: "Ideas with category and why they came up",
+  vision_items: "Vision board goals (photos stay in storage)",
 };
 
 /** Download everything: one JSON file, or any table as CSV for Excel or pandas. */

@@ -15,6 +15,8 @@ export const EXPORT_TABLES = [
   "vocab_reviews",
   "watchlist",
   "verdicts",
+  "ideas",
+  "vision_items",
 ] as const;
 
 type Table = (typeof EXPORT_TABLES)[number];
