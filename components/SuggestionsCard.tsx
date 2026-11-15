@@ -12,7 +12,6 @@ function amount(s: TargetSuggestion, value: number, max: number | null) {
   return s.target.metric === "minutes" ? range : `${range} ${s.target.unit ?? ""}`;
 }
 
-/** Adaptive targets: after two weeks well under or over a goal, offer a new one. Never automatic. */
 export function SuggestionsCard({ suggestions }: { suggestions: TargetSuggestion[] }) {
   const [, startTransition] = useTransition();
   const [items, hide] = useOptimistic(suggestions, (current: TargetSuggestion[], id: string) =>
@@ -33,13 +32,13 @@ export function SuggestionsCard({ suggestions }: { suggestions: TargetSuggestion
   }
 
   return (
-    <section className="flex flex-col gap-3 rounded-3xl border border-accent/40 bg-accent-soft/40 p-5">
+    <section className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-5">
       <div className="flex flex-col gap-1">
-        <span className="label !text-accent">Targets, adjusted to reality</span>
+        <span className="label">Targets, adjusted to reality</span>
         <p className="text-sm text-muted">Based on your last two full weeks. Nothing changes unless you accept.</p>
       </div>
       {items.map((s) => (
-        <div key={s.target.id} className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 sm:flex-row sm:items-center">
+        <div key={s.target.id} className="flex flex-col gap-3 rounded-2xl border border-line bg-background p-4 sm:flex-row sm:items-center">
           <IconBubble icon={s.target.rules.icon} name={s.target.name} size={40} />
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <span className="font-semibold">
@@ -56,7 +55,7 @@ export function SuggestionsCard({ suggestions }: { suggestions: TargetSuggestion
             <button
               type="button"
               onClick={() => decide(s, "accepted")}
-              className="min-h-10 rounded-full bg-accent px-4 text-sm font-semibold text-on-accent"
+              className="min-h-10 rounded-full border border-accent px-4 text-sm font-semibold text-accent transition hover:bg-accent-soft"
             >
               {s.direction === "lower" ? "Lower it" : "Raise it"}
             </button>

@@ -1,7 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import { ImageResponse } from "next/og";
 
-const ACCENT = "#c2410c";
+const ACCENT = "#7443df";
 const PAPER = "#fbfaf7";
 
 async function loadFont(): Promise<ArrayBuffer> {
