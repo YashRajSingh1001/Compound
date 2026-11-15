@@ -38,7 +38,7 @@ export function RecallQuiz({ words, date, mode }: { words: QuizWord[]; date: str
     <div className="flex flex-col gap-3">
       {results && (
         <div className="flex items-baseline justify-between rounded-2xl bg-accent-soft px-4 py-3">
-          <span className="font-serif text-3xl text-accent">
+          <span className="font-serif font-semibold text-3xl text-accent">
             {score} / {results.length}
           </span>
           <span className="text-sm text-muted">
@@ -59,7 +59,7 @@ export function RecallQuiz({ words, date, mode }: { words: QuizWord[]; date: str
               <div className="flex items-baseline justify-between gap-2">
                 <label htmlFor={`answer-${w.id}`} className="flex items-baseline gap-2">
                   <span className="font-mono text-xs text-muted">{i + 1}</span>
-                  <span className="font-serif text-2xl">{w.word}</span>
+                  <span className="font-serif font-semibold text-2xl">{w.word}</span>
                   {w.part_of_speech && <span className="text-xs text-muted italic">{w.part_of_speech}</span>}
                 </label>
                 {result && (

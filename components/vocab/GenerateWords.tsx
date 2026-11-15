@@ -30,7 +30,7 @@ export function GenerateWords({ date, perDay }: { date: string; perDay: number }
       {pending ? (
         <>
           <span className="size-8 animate-spin rounded-full border-2 border-line border-t-accent" aria-hidden />
-          <p className="font-serif text-xl italic">Picking today&rsquo;s {perDay} words…</p>
+          <p className="font-serif font-semibold text-xl">Picking today&rsquo;s {perDay} words…</p>
           <p className="text-sm text-muted">Checking your history so nothing repeats.</p>
         </>
       ) : error ? (

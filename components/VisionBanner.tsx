@@ -25,8 +25,8 @@ export function VisionBanner({ item, today }: { item: VisionCardData; today: str
         <span className="font-mono text-[11px] tracking-[0.14em] text-white/75 uppercase">
           Today&rsquo;s vision{days !== null && days >= 0 ? ` · ${days} days · ${formatDay(item.target_date!)}` : ""}
         </span>
-        <span className="font-serif text-3xl leading-tight">{item.title}</span>
-        {item.statement && <span className="max-w-xl font-serif text-lg text-white/90 italic">&ldquo;{item.statement}&rdquo;</span>}
+        <span className="font-serif font-semibold text-3xl leading-tight">{item.title}</span>
+        {item.statement && <span className="max-w-xl font-serif font-semibold text-lg text-white/90">&ldquo;{item.statement}&rdquo;</span>}
       </div>
     </Link>
   );

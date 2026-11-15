@@ -87,7 +87,7 @@ export function ProgressView({ data, readOnly = false }: { data: ProgressData; r
     <>
       <header className="flex flex-col gap-1">
         <span className="label">Since {formatDay(data.trackingSince)} · this week and beyond</span>
-        <h1 className="font-serif text-5xl leading-none italic tracking-tight lg:text-6xl">Progress</h1>
+        <h1 className="font-serif font-semibold text-5xl leading-none tracking-tight lg:text-6xl">Progress</h1>
       </header>
 
       <section aria-label="Highlights" className="grid grid-cols-2 gap-3 lg:grid-cols-5">
@@ -100,7 +100,7 @@ export function ProgressView({ data, readOnly = false }: { data: ProgressData; r
         ].map((s) => (
           <div key={s.label} className={`${card} flex flex-col gap-1`}>
             <span className="label">{s.label}</span>
-            <span className="font-serif text-4xl leading-none">{s.value}</span>
+            <span className="font-serif font-semibold text-4xl leading-none">{s.value}</span>
             <span className="text-xs text-muted">{s.sub}</span>
           </div>
         ))}
@@ -198,7 +198,7 @@ export function ProgressView({ data, readOnly = false }: { data: ProgressData; r
                         {m.target.due_date ? `Due ${formatDay(m.target.due_date)} · ${m.daysLeft} days left` : "No due date"}
                       </span>
                     </div>
-                    <span className="font-serif text-3xl leading-none">{pctDone}%</span>
+                    <span className="font-serif font-semibold text-3xl leading-none">{pctDone}%</span>
                   </div>
                   <ProgressBar value={m.done} max={m.total} color={color(m.target.area_id)} />
                   <span className="text-xs text-muted">

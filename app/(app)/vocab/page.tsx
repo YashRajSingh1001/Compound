@@ -46,7 +46,7 @@ async function Vocab({ searchParams }: { searchParams: PageProps<"/vocab">["sear
       <header className="flex items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <span className="label">{formatDay(date)} · {state.perDay} words a day</span>
-          <h1 className="font-serif text-5xl leading-none italic tracking-tight lg:text-6xl">Vocab</h1>
+          <h1 className="font-serif font-semibold text-5xl leading-none tracking-tight lg:text-6xl">Vocab</h1>
         </div>
         <span
           className={`rounded-full px-3 py-1.5 text-sm font-medium ${done ? "bg-good-soft text-good" : "bg-chip text-muted"}`}
@@ -87,12 +87,12 @@ async function Vocab({ searchParams }: { searchParams: PageProps<"/vocab">["sear
               if (!words.length) return null;
               return (
                 <div key={group.name} className="flex flex-col gap-3">
-                  <h2 className="font-serif text-2xl">{group.name}</h2>
+                  <h2 className="font-serif font-semibold text-2xl">{group.name}</h2>
                   <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     {words.map((w) => (
                       <li key={w.id} className="flex flex-col gap-2 rounded-2xl border border-line p-4">
                         <div className="flex items-baseline gap-2">
-                          <span className="font-serif text-[26px] leading-none">{w.word}</span>
+                          <span className="font-serif font-semibold text-[26px] leading-none">{w.word}</span>
                           {w.part_of_speech && <span className="text-xs text-muted italic">{w.part_of_speech}</span>}
                         </div>
                         <p className="text-[15px] leading-relaxed">{w.meaning}</p>
@@ -163,7 +163,7 @@ async function Vocab({ searchParams }: { searchParams: PageProps<"/vocab">["sear
             <div className="mt-1 grid grid-cols-5 gap-2 text-center">
               {LEITNER_DAYS.map((days, i) => (
                 <div key={days} className="rounded-xl bg-chip px-1 py-2">
-                  <div className="font-serif text-lg text-foreground">Box {i + 1}</div>
+                  <div className="font-serif font-semibold text-lg text-foreground">Box {i + 1}</div>
                   <div className="text-xs">{days === 1 ? "next day" : `${days} days`}</div>
                 </div>
               ))}
@@ -179,7 +179,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-1">
       <span className="label !text-[10px]">{label}</span>
-      <span className="font-serif text-4xl leading-none">{value}</span>
+      <span className="font-serif font-semibold text-4xl leading-none">{value}</span>
     </div>
   );
 }

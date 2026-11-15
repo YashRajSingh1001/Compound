@@ -26,12 +26,14 @@ export function TodayView({
   day,
   demo = false,
   vision = null,
+  today = day.date,
 }: {
   day: DaySnapshot;
   demo?: boolean;
-  /** Today's rotating vision board card, if there is one. */
   vision?: VisionCardData | null;
+  today?: string;
 }) {
+  const past = day.date < today;
   const color = (areaId: string | null) => day.areas.find((a) => a.id === areaId)?.color;
   const done = day.daily.filter((d) => d.done);
   const left = day.daily.filter((d) => !d.done).map((d) => d.target.name);
@@ -45,14 +47,14 @@ export function TodayView({
 
   return (
     <>
-      <TodayHeader date={day.date} showToggle={!demo} />
+      <TodayHeader date={day.date} today={today} showToggle={!demo} navigable={!demo} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <div className="order-1 lg:col-span-5">
           <HeroCard done={done.length} total={day.daily.length} left={left} quote={lineOfTheDay(day.date)} />
         </div>
         <div className="order-3 lg:order-2 lg:col-span-3">
-          <StreakCard streak={day.streak} best={day.bestStreak} week={day.week} today={day.date} />
+          <StreakCard streak={day.streak} best={day.bestStreak} week={day.week} today={day.date} realToday={demo ? undefined : today} />
         </div>
         {main && (
           <div className="order-4 lg:order-3 lg:col-span-4">
@@ -60,7 +62,7 @@ export function TodayView({
           </div>
         )}
 
-        {day.suggestions.length > 0 && (
+        {!past && day.suggestions.length > 0 && (
           <div className="order-3 lg:order-4 lg:col-span-12">
             <SuggestionsCard suggestions={day.suggestions} />
           </div>
@@ -71,18 +73,18 @@ export function TodayView({
           className="order-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:order-4 lg:col-span-12 xl:grid-cols-4"
         >
           {day.daily.map((status, i) => (
-            <DailyTile key={status.target.id} status={status} color={color(status.target.area_id)} index={i} {...tileLink(status.target, day)} />
+            <DailyTile key={status.target.id} status={status} color={color(status.target.area_id)} index={i} {...tileLink(status.target, day, !past)} />
           ))}
         </section>
 
-        {vision && (
+        {!past && vision && (
           <div className="order-3 lg:order-4 lg:col-span-12">
             <VisionBanner item={vision} today={day.date} />
           </div>
         )}
 
         <div className="order-8 lg:order-5 lg:col-span-5">
-          <Heatmap heat={day.heat} today={day.date} />
+          <Heatmap heat={day.heat} today={day.date} realToday={demo ? undefined : today} />
         </div>
 
         <section className={`${card} order-5 flex flex-col gap-4 lg:order-6 lg:col-span-4`}>
@@ -92,6 +94,7 @@ export function TodayView({
           ))}
         </section>
 
+        {!past && (
         <section className={`${card} order-6 flex flex-col gap-2 lg:order-7 lg:col-span-3`}>
           <div className="flex items-baseline justify-between">
             <span className="label">To-do</span>
@@ -101,6 +104,7 @@ export function TodayView({
           </div>
           <TaskList tasks={day.tasks} date={day.date} areas={day.areas} flat />
         </section>
+        )}
 
         {day.milestones.length > 0 && (
           <section className={`${card} order-7 flex flex-col gap-1 lg:order-8 lg:col-span-7`}>
@@ -113,7 +117,7 @@ export function TodayView({
                   <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="truncate text-sm font-semibold">{m.target.name}</span>
-                      <span className="font-serif text-xl leading-none">{pct}%</span>
+                      <span className="font-serif font-semibold text-xl leading-none">{pct}%</span>
                     </div>
                     <ProgressBar value={m.done} max={m.total} color={color(m.target.area_id)} />
                     <span className="text-xs text-muted">

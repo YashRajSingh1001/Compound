@@ -248,11 +248,11 @@ export function VisionCard({ item, today, targets }: { item: VisionCardData; tod
 
       <div className="relative flex flex-col gap-2 p-5 text-white">
         {when && <span className="font-mono text-[11px] tracking-[0.14em] text-white/75 uppercase">{achieved ? "Achieved" : when}</span>}
-        <h2 className={`font-serif text-3xl leading-tight ${achieved ? "line-through decoration-2" : ""}`}>{item.title}</h2>
-        {item.statement && <p className="font-serif text-lg leading-snug text-white/90 italic">&ldquo;{item.statement}&rdquo;</p>}
+        <h2 className={`font-serif font-semibold text-3xl leading-tight ${achieved ? "line-through decoration-2" : ""}`}>{item.title}</h2>
+        {item.statement && <p className="font-serif font-semibold text-lg leading-snug text-white/90">&ldquo;{item.statement}&rdquo;</p>}
         {item.progress && (
           <div className="flex flex-col gap-1.5 pt-1">
-            <ProgressBar value={item.progress.done} max={item.progress.total} color="#d8b26e" />
+            <ProgressBar value={item.progress.done} max={item.progress.total} color="var(--accent)" />
             <span className="text-xs text-white/75">{item.progress.label}</span>
           </div>
         )}

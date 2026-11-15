@@ -71,7 +71,7 @@ export function IdeaCard({ idea, color }: { idea: Idea; color?: string }) {
               {idea.category}
             </span>
           )}
-          <h3 className={`font-serif text-2xl leading-tight ${idea.status === "done" ? "text-muted line-through" : ""}`}>{idea.title}</h3>
+          <h3 className={`font-serif font-semibold text-2xl leading-tight ${idea.status === "done" ? "text-muted line-through" : ""}`}>{idea.title}</h3>
         </div>
         <button
           type="button"

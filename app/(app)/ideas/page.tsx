@@ -55,7 +55,7 @@ async function Ideas({ searchParams }: { searchParams: PageProps<"/ideas">["sear
         <span className="label">
           {ideas.filter(VIEWS[0].match).length} active · {categories.length} {categories.length === 1 ? "category" : "categories"}
         </span>
-        <h1 className="font-serif text-5xl leading-none italic tracking-tight lg:text-6xl">Ideas</h1>
+        <h1 className="font-serif font-semibold text-5xl leading-none tracking-tight lg:text-6xl">Ideas</h1>
       </header>
 
       <section className={card}>

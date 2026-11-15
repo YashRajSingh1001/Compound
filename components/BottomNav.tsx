@@ -29,7 +29,7 @@ export function SideRail() {
       <Link
         href="/"
         aria-label="Compound"
-        className="mb-4 flex size-11 items-center justify-center rounded-[14px] bg-accent font-serif text-[28px] text-on-accent italic"
+        className="mb-4 flex size-11 items-center justify-center rounded-[14px] bg-accent font-serif font-semibold text-[28px] text-on-accent"
       >
         C
       </Link>

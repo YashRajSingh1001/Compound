@@ -16,7 +16,7 @@ import { WeeklyQuickLog, formatAmount } from "./WeeklyQuickLog";
  * tasks → verdict. Every tap saves immediately, so quitting halfway loses
  * nothing. Steps with nothing to show are skipped.
  */
-export function CheckInFlow({ day }: { day: DaySnapshot }) {
+export function CheckInFlow({ day, past = false }: { day: DaySnapshot; past?: boolean }) {
   const color = (areaId: string | null) => day.areas.find((a) => a.id === areaId)?.color;
 
   const steps = [
@@ -25,7 +25,7 @@ export function CheckInFlow({ day }: { day: DaySnapshot }) {
       hint: "Did the basics happen today?",
       show: day.daily.length > 0,
       body: day.daily.map((status, i) => (
-        <DailyTile key={status.target.id} status={status} color={color(status.target.area_id)} index={i} {...tileLink(status.target, day)} />
+        <DailyTile key={status.target.id} status={status} color={color(status.target.area_id)} index={i} {...tileLink(status.target, day, !past)} />
       )),
     },
     {
@@ -69,7 +69,7 @@ export function CheckInFlow({ day }: { day: DaySnapshot }) {
     {
       title: "Tasks",
       hint: "Tick what's done. Push the rest to tomorrow.",
-      show: true,
+      show: !past,
       body: <TaskList tasks={day.tasks} date={day.date} areas={day.areas} canMove />,
     },
     {
@@ -89,7 +89,7 @@ export function CheckInFlow({ day }: { day: DaySnapshot }) {
       <header className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <span className="label">
-            Evening check-in · {formatDay(day.date)}
+            {past ? "Catching up" : "Evening check-in"} · {formatDay(day.date)}
           </span>
           <span className="label">
             {index + 1} / {steps.length}
@@ -104,7 +104,7 @@ export function CheckInFlow({ day }: { day: DaySnapshot }) {
           ))}
         </div>
         <div className="rise" key={step.title}>
-          <h1 className="font-serif text-5xl leading-tight italic tracking-tight">{step.title}</h1>
+          <h1 className="font-serif font-semibold text-5xl leading-tight tracking-tight">{step.title}</h1>
           <p className="text-muted">{step.hint}</p>
         </div>
       </header>

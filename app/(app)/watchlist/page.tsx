@@ -59,7 +59,7 @@ async function Watchlist({ searchParams }: { searchParams: PageProps<"/watchlist
           <span className="label">
             {open.length} to watch, read or hear · {inbox.length} in the inbox
           </span>
-          <h1 className="font-serif text-5xl leading-none italic tracking-tight lg:text-6xl">Watchlist</h1>
+          <h1 className="font-serif font-semibold text-5xl leading-none tracking-tight lg:text-6xl">Watchlist</h1>
         </div>
         <div className="w-full lg:max-w-xl">
           <WatchAdd />
@@ -67,7 +67,7 @@ async function Watchlist({ searchParams }: { searchParams: PageProps<"/watchlist
       </header>
 
       <section className={`${card} flex flex-col gap-4`}>
-        <p className="font-serif text-2xl italic">
+        <p className="font-serif font-semibold text-2xl">
           I have <span className="text-accent">{minutes ? formatTime(minutes) : "some time"}</span> and want something{" "}
           <span className="text-accent">{mood ? MOOD_LABEL[mood].toLowerCase() : "good"}</span>.
         </p>

@@ -22,8 +22,8 @@ async function Vision() {
         <span className="label">
           {open} {open === 1 ? "goal" : "goals"} in sight · {items.length - open} achieved
         </span>
-        <h1 className="font-serif text-5xl leading-none italic tracking-tight lg:text-6xl">Vision</h1>
-        <p className="font-serif text-xl text-muted italic">See it every day. Then go do the work.</p>
+        <h1 className="font-serif font-semibold text-5xl leading-none tracking-tight lg:text-6xl">Vision</h1>
+        <p className="font-serif font-semibold text-xl text-muted">See it every day. Then go do the work.</p>
       </header>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {items.map((item) => (

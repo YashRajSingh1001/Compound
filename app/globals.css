@@ -1,66 +1,66 @@
 @import "tailwindcss";
 
-/* Theme: warm paper in light, warm ink in dark, one gold accent.
-   data-theme="light|dark" on <html> overrides the system setting. */
-
 :root {
-  --background: #f6f3ed;
-  --foreground: #1d1b17;
-  --card: #fffdf9;
-  --muted: #7a7368;
-  --line: #e7e1d6;
-  --chip: #efe9df;
-  --accent: #a87f32;
-  --accent-soft: #f3e8d2;
-  --on-accent: #fffdf9;
+  --background: #fbfaf7;
+  --foreground: #17150f;
+  --card: #ffffff;
+  --muted: #66625a;
+  --line: #e6e3dc;
+  --chip: #f3f1ec;
+  --accent: #c2410c;
+  --accent-soft: #fdeee6;
+  --on-accent: #ffffff;
+  --label: #0f766e;
+  --label-soft: #e6f4f2;
   --good: #2f8a4c;
   --good-soft: #e1f1e4;
   --warn: #b7791f;
   --warn-soft: #fbefd9;
   --bad: #c2412d;
   --bad-soft: #f8e3de;
-  --glow: rgba(168, 127, 50, 0.1);
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --background: #0d0c0a;
-  --foreground: #f2ede4;
-  --card: #161512;
-  --muted: #9a9285;
-  --line: #26241f;
-  --chip: #211f1b;
-  --accent: #d8b26e;
-  --accent-soft: #2c2518;
-  --on-accent: #17140e;
+  --background: #121110;
+  --foreground: #efece5;
+  --card: #1b1a17;
+  --muted: #a39f95;
+  --line: #2c2a26;
+  --chip: #171614;
+  --accent: #fb7a3c;
+  --accent-soft: #2e1a10;
+  --on-accent: #17150f;
+  --label: #3cc2b3;
+  --label-soft: #10302c;
   --good: #6fcf8b;
   --good-soft: #15251a;
   --warn: #f0b85a;
   --warn-soft: #2b2111;
   --bad: #ef7f6b;
   --bad-soft: #2c1611;
-  --glow: rgba(216, 178, 110, 0.09);
   color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --background: #0d0c0a;
-    --foreground: #f2ede4;
-    --card: #161512;
-    --muted: #9a9285;
-    --line: #26241f;
-    --chip: #211f1b;
-    --accent: #d8b26e;
-    --accent-soft: #2c2518;
-    --on-accent: #17140e;
+    --background: #121110;
+    --foreground: #efece5;
+    --card: #1b1a17;
+    --muted: #a39f95;
+    --line: #2c2a26;
+    --chip: #171614;
+    --accent: #fb7a3c;
+    --accent-soft: #2e1a10;
+    --on-accent: #17150f;
+    --label: #3cc2b3;
+    --label-soft: #10302c;
     --good: #6fcf8b;
     --good-soft: #15251a;
     --warn: #f0b85a;
     --warn-soft: #2b2111;
     --bad: #ef7f6b;
     --bad-soft: #2c1611;
-    --glow: rgba(216, 178, 110, 0.09);
     color-scheme: dark;
   }
 }
@@ -75,35 +75,38 @@
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-on-accent: var(--on-accent);
+  --color-label: var(--label);
+  --color-label-soft: var(--label-soft);
   --color-good: var(--good);
   --color-good-soft: var(--good-soft);
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
   --color-bad: var(--bad);
   --color-bad-soft: var(--bad-soft);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-instrument-serif);
+  --font-sans: "Century Gothic", CenturyGothic, var(--font-jost), "Segoe UI", sans-serif;
+  --font-serif: "Century Gothic", CenturyGothic, var(--font-jost), "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, Consolas, "SF Mono", Menlo, monospace;
 }
 
 body {
-  background:
-    radial-gradient(60rem 30rem at 50% -10rem, var(--glow), transparent 70%),
-    var(--background);
-  background-attachment: fixed;
+  background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
   transition: background-color 0.2s, color 0.2s;
 }
 
-/* Small caps labels in the mono face, like "MON · 26 OCTOBER". */
+::selection {
+  background: var(--accent-soft);
+}
+
 .label {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.16em;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--label);
 }
 
 @keyframes rise {

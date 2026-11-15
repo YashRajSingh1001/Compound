@@ -18,7 +18,7 @@ export default function MorePage() {
   return (
     <>
       <header className="flex items-end justify-between">
-        <h1 className="font-serif text-5xl leading-none italic tracking-tight">More</h1>
+        <h1 className="font-serif font-semibold text-5xl leading-none tracking-tight">More</h1>
         <ThemeToggle />
       </header>
       <nav className="flex flex-col overflow-hidden rounded-3xl border border-line bg-card">

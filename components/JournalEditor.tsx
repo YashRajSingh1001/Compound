@@ -70,7 +70,7 @@ export function JournalEditor({ date, initial, isToday }: { date: string; initia
         }}
         aria-label="Journal entry"
         placeholder={`${isToday ? "How was today?" : "How was this day?"} Write or paste anything.\n\n${PROMPTS.join("\n")}`}
-        className="min-h-[55vh] w-full resize-y rounded-2xl border border-line bg-background p-4 font-serif text-[19px] leading-relaxed outline-none transition placeholder:text-muted/70 focus:border-accent lg:min-h-[60vh]"
+        className="min-h-[55vh] w-full resize-y rounded-2xl border border-line bg-background p-4 font-serif font-semibold text-[19px] leading-relaxed outline-none transition placeholder:text-muted/70 focus:border-accent lg:min-h-[60vh]"
       />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="text-sm text-muted">

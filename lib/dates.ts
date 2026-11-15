@@ -86,3 +86,8 @@ export function formatMinutes(minutes: number): string {
 export function weekdayName(iso: string): string {
   return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][weekdayIndex(iso)];
 }
+
+export function pickDay(param: unknown, today: string, maxDaysBack = 120): string {
+  if (!isISODate(param) || param > today || param < addDays(today, -maxDaysBack)) return today;
+  return param;
+}

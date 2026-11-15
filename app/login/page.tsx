@@ -10,7 +10,7 @@ export default function LoginPage() {
     <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 px-4">
       <div>
         <span className="label">Daily tracker</span>
-        <h1 className="font-serif text-6xl italic tracking-tight">Compound</h1>
+        <h1 className="font-serif font-semibold text-6xl tracking-tight">Compound</h1>
         <p className="text-muted">Small daily wins that compound.</p>
       </div>
       <form action={formAction} className="flex flex-col gap-3">

@@ -24,11 +24,11 @@ export function VerdictCard({ date, verdict }: { date: string; verdict: Verdict 
       />
       <span className="label">Tonight&rsquo;s verdict</span>
       {verdict ? (
-        <p className={`font-serif text-[22px] leading-snug transition-opacity ${pending ? "opacity-40" : ""}`}>
+        <p className={`font-serif font-semibold text-[22px] leading-snug transition-opacity ${pending ? "opacity-40" : ""}`}>
           {verdict.text}
         </p>
       ) : (
-        <p className="font-serif text-[22px] leading-snug text-muted italic">
+        <p className="font-serif font-semibold text-[22px] leading-snug text-muted">
           Log your day, then get an honest read on how it went.
         </p>
       )}

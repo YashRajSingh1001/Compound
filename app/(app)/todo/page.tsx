@@ -36,7 +36,7 @@ async function Todo({ searchParams }: { searchParams: PageProps<"/todo">["search
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex flex-col gap-1">
           <span className="label">Commitments · {formatDay(date)}</span>
-          <h1 className="font-serif text-5xl leading-none italic tracking-tight lg:text-6xl">To-do</h1>
+          <h1 className="font-serif font-semibold text-5xl leading-none tracking-tight lg:text-6xl">To-do</h1>
         </div>
         <div className="w-full lg:max-w-xl">
           <QuickAdd date={date} areas={areas} />
@@ -130,7 +130,7 @@ function Stat({ label, value, sub }: { label: string; value: string; sub: string
   return (
     <div className={`${card} flex min-w-0 flex-col gap-1`}>
       <span className="label">{label}</span>
-      <span className="font-serif text-4xl leading-none">{value}</span>
+      <span className="font-serif font-semibold text-4xl leading-none">{value}</span>
       <span className="truncate text-xs text-muted">{sub}</span>
     </div>
   );

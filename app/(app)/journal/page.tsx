@@ -37,7 +37,7 @@ async function Journal({ searchParams }: { searchParams: PageProps<"/journal">["
     <>
       <header className="flex flex-col gap-1">
         <span className="label">{asked === today ? `Today · ${formatDay(today)}` : formatDay(asked)}</span>
-        <h1 className="font-serif text-5xl leading-none italic tracking-tight lg:text-6xl">Journal</h1>
+        <h1 className="font-serif font-semibold text-5xl leading-none tracking-tight lg:text-6xl">Journal</h1>
       </header>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
@@ -61,7 +61,7 @@ async function Journal({ searchParams }: { searchParams: PageProps<"/journal">["
                       d === asked ? "bg-accent text-on-accent" : written.has(d) ? "bg-good-soft text-good" : "bg-chip text-muted"
                     }`}
                   >
-                    <span className="font-serif text-base leading-none">{Number(d.slice(8))}</span>
+                    <span className="font-serif font-semibold text-base leading-none">{Number(d.slice(8))}</span>
                   </Link>
                 ))}
             </div>
@@ -87,7 +87,7 @@ async function Journal({ searchParams }: { searchParams: PageProps<"/journal">["
                   <span className="text-xs text-muted">
                     {formatDay(e.entry_date)} · {e.text.trim().split(/\s+/).length} words
                   </span>
-                  <span className="line-clamp-2 font-serif text-[17px] leading-snug">{e.text}</span>
+                  <span className="line-clamp-2 font-serif font-semibold text-[17px] leading-snug">{e.text}</span>
                 </Link>
               ))}
           </section>

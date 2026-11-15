@@ -24,7 +24,7 @@ export default function ExportPage() {
     <>
       <header className="flex flex-col gap-1">
         <span className="label">Your data</span>
-        <h1 className="font-serif text-5xl leading-none italic tracking-tight lg:text-6xl">Export</h1>
+        <h1 className="font-serif font-semibold text-5xl leading-none tracking-tight lg:text-6xl">Export</h1>
         <p className="max-w-xl text-muted">
           Everything Compound stores is yours. Download it all as one JSON file, or one table at a time as CSV for Excel or pandas.
         </p>
