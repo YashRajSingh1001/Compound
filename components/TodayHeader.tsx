@@ -149,7 +149,11 @@ export function StreakCard({
         <span className="text-muted">green {streak === 1 ? "day" : "days"}</span>
       </div>
       <span className="text-sm text-muted">
-        {best === 0 ? "A green day today starts one." : toBeat > 0 ? `Best: ${best} · ${toBeat} more to beat it` : `Best: ${best} · this is your record`}
+        {best === 0
+          ? realToday && today < realToday
+            ? "No green days yet by this day."
+            : "A green day today starts one."
+          : toBeat > 0 ? `Best: ${best} · ${toBeat} more to beat it` : `Best: ${best} · this is your record`}
       </span>
       <div className="mt-auto grid grid-cols-7 gap-1 pt-2">
         {week.map((day, i) => {
