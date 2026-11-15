@@ -9,19 +9,13 @@ import type { DailyLog } from "@/lib/types";
 import { ActionPill, Chip, IconBubble, ProgressRing } from "./ui";
 
 const SESSION_PRESETS = [15, 30, 45, 60, 90];
+const MAX_SESSION = 720;
 
 let optimisticCount = 0;
 const optimisticId = () => `optimistic-${++optimisticCount}`;
 
 type LogChange = { type: "add"; log: DailyLog } | { type: "remove"; id: string } | { type: "replace"; logs: DailyLog[] };
 
-/**
- * One daily non-negotiable as a big tap target.
- * - bool without tags (Vocab, Journal): tap toggles done.
- * - bool with tags (Workout): tap opens gym / run / rest.
- * - minutes (Study): tap opens session presets, split by tag.
- * - with `href` (Vocab): tap opens its own page, which ticks it when done.
- */
 export function DailyTile({
   status,
   color,
@@ -33,7 +27,6 @@ export function DailyTile({
   color?: string;
   index?: number;
   href?: string;
-  /** Replaces the default status line, e.g. "4 of 10 words · 5 to review". */
   note?: string;
 }) {
   const { target, date, required, tags } = status;
@@ -41,8 +34,9 @@ export function DailyTile({
   const [open, setOpen] = useState(false);
   const [tag, setTag] = useState<string | null>(tags[0] ?? null);
   const [pending, startTransition] = useTransition();
+  const [custom, setCustom] = useState("");
+  const [customError, setCustomError] = useState<string | null>(null);
 
-  // Show the change instantly; the server refresh then confirms it.
   const [logs, applyChange] = useOptimistic(status.logs, (current: DailyLog[], change: LogChange) => {
     if (change.type === "add") return [...current, change.log];
     if (change.type === "remove") return current.filter((l) => l.id !== change.id);
@@ -50,7 +44,6 @@ export function DailyTile({
   });
 
   const value = target.metric === "bool" ? (logs.length ? 1 : 0) : logs.reduce((a, l) => a + Number(l.value), 0);
-  // The server's rest-day check only applies until an optimistic change replaces the logs.
   const extraRest = status.extraRest && logs === status.logs;
   const done = value >= required && !extraRest;
   const loggedTag = logs[0]?.tag ?? null;
@@ -79,6 +72,18 @@ export function DailyTile({
     } else {
       setOpen((o) => !o);
     }
+  }
+
+  function addCustom(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const minutes = Number(custom.trim());
+    if (!custom.trim() || !Number.isInteger(minutes) || minutes < 1 || minutes > MAX_SESSION) {
+      setCustomError(`Type whole minutes, from 1 to ${MAX_SESSION}`);
+      return;
+    }
+    setCustom("");
+    setCustomError(null);
+    run({ type: "add", log: fakeLog(minutes, tag) }, () => addSession(target.id, date, minutes, tag));
   }
 
   function pickTag(t: string) {
@@ -163,6 +168,33 @@ export function DailyTile({
               </Chip>
             ))}
           </div>
+          <form onSubmit={addCustom} noValidate className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <label className="flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-full border border-line bg-background px-4 focus-within:border-accent">
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={MAX_SESSION}
+                  step={1}
+                  value={custom}
+                  onChange={(e) => {
+                    setCustom(e.target.value);
+                    setCustomError(null);
+                  }}
+                  placeholder="Any number, e.g. 55"
+                  aria-label={`Minutes of ${target.name} to add`}
+                  aria-invalid={customError ? true : undefined}
+                  className="w-full min-w-0 [appearance:textfield] bg-transparent text-base outline-none sm:text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                />
+                <span className="shrink-0 text-sm text-muted">min</span>
+              </label>
+              <button type="submit" className="min-h-10 shrink-0 rounded-full bg-accent px-5 text-sm font-semibold text-on-accent active:scale-95">
+                Add
+              </button>
+            </div>
+            {customError && <p className="px-1 text-sm text-bad">{customError}</p>}
+          </form>
           {logs.length > 0 && (
             <ul className="flex flex-col gap-1.5 text-sm">
               {logs.map((l) => (
