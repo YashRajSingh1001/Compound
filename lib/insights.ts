@@ -2,7 +2,7 @@
 // correlations. Pure functions over targets + logs, like lib/progress.ts.
 
 import { addDays, daysBetween, isWeekend, weekStart } from "./dates";
-import { dailyStatus, weeklyProgress } from "./progress";
+import { dailyStatus, partialShare, weeklyProgress } from "./progress";
 import type { DailyLog, Target } from "./types";
 
 export type WeekPoint = { weekStart: string; actual: number; goal: number; share: number; current: boolean };
@@ -71,7 +71,10 @@ export function habitRates(targets: Target[], logs: DailyLog[], from: string, to
   return targets
     .filter((t) => t.kind === "daily")
     .map((t) => {
-      const done = days.filter((d) => dailyStatus(t, targets, logs, d).done).length;
-      return { target: t, done, days: days.length, rate: days.length ? done / days.length : 0 };
+      const shares = days.map((d) => partialShare(dailyStatus(t, targets, logs, d)));
+      const done = shares.filter((x) => x >= 1).length;
+      const partial = shares.filter((x) => x > 0 && x < 1).length;
+      const effort = days.length ? shares.reduce((a, x) => a + x, 0) / days.length : 0;
+      return { target: t, done, partial, days: days.length, rate: days.length ? done / days.length : 0, effort };
     });
 }

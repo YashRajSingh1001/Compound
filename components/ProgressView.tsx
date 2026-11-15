@@ -19,7 +19,7 @@ export type ProgressData = {
   studyHistory: { target: Target; points: WeekPoint[] } | null;
   milestoneItems: Record<string, Task[]>;
   comparisons: Comparison[];
-  habits: { target: Target; done: number; days: number; rate: number }[];
+  habits: { target: Target; done: number; partial: number; days: number; rate: number; effort: number }[];
   trackingSince: string;
   vocabAccuracy: number | null;
   todoSameDay: number | null;
@@ -96,7 +96,7 @@ export function ProgressView({ data, readOnly = false }: { data: ProgressData; r
           { label: "Streak", value: String(day.streak), sub: `Best ${day.bestStreak}` },
           { label: "Vocab accuracy", value: pct(data.vocabAccuracy), sub: "Daily recall tests" },
           { label: "To-dos same day", value: pct(data.todoSameDay), sub: "Last 30 days" },
-          ...data.habits.slice(0, 1).map((h) => ({ label: `${h.target.name} rate`, value: pct(h.rate), sub: `${h.done} of ${h.days} days` })),
+          ...data.habits.slice(0, 1).map((h) => ({ label: h.target.name, value: pct(h.effort), sub: `${h.done} full + ${h.partial} partial of ${h.days}` })),
         ].map((s) => (
           <div key={s.label} className={`${card} flex flex-col gap-1`}>
             <span className="label">{s.label}</span>
@@ -229,10 +229,13 @@ export function ProgressView({ data, readOnly = false }: { data: ProgressData; r
         </section>
 
         <div className="lg:col-span-7">
-          <Heatmap heat={day.heat} today={day.date} />
+          <Heatmap heat={day.heat} today={day.date} realToday={readOnly ? undefined : day.date} since={data.trackingSince} />
         </div>
         <section className={`${card} flex flex-col gap-3 lg:col-span-5`}>
-          <span className="label">Non-negotiables since {formatDay(data.trackingSince)}</span>
+          <div className="flex flex-col gap-0.5">
+            <span className="label">Non-negotiables since {formatDay(data.trackingSince)}</span>
+            <span className="text-xs text-muted">Partial days count too: 45 of 90 min is half a day.</span>
+          </div>
           {data.habits.map((h) => (
             <div key={h.target.id} className="flex flex-col gap-1.5">
               <div className="flex justify-between text-sm">
@@ -241,10 +244,10 @@ export function ProgressView({ data, readOnly = false }: { data: ProgressData; r
                   {h.target.name}
                 </span>
                 <span className="text-muted">
-                  {h.done}/{h.days} · {pct(h.rate)}
+                  {h.done} full{h.partial > 0 ? ` + ${h.partial} partial` : ""} of {h.days} · {pct(h.effort)}
                 </span>
               </div>
-              <ProgressBar value={h.rate} max={1} color={color(h.target.area_id)} />
+              <ProgressBar value={h.effort} max={1} color={color(h.target.area_id)} />
             </div>
           ))}
         </section>

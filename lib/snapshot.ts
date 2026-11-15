@@ -11,6 +11,7 @@ import {
   suggestTargets,
   weeklyProgress,
   type DailyStatus,
+  type DayPart,
   type MilestoneProgress,
   type TargetSuggestion,
   type WeeklyProgress,
@@ -22,7 +23,7 @@ export const HEATMAP_WEEKS = 18;
 // How far back logs are loaded: the heatmap's first Monday, at most.
 export const HISTORY_DAYS = HEATMAP_WEEKS * 7;
 
-export type WeekDay = { date: string; done: number; total: number };
+export type WeekDay = { date: string; done: number; total: number; score: number; parts: DayPart[] };
 
 export type DaySnapshot = {
   date: string;
@@ -74,7 +75,7 @@ export function buildDay(input: DayInput): DaySnapshot {
   const heatStart = addDays(weekStart(date), -(HEATMAP_WEEKS - 1) * 7);
   const heat: WeekDay[] = Array.from({ length: HEATMAP_WEEKS * 7 }, (_, i) => {
     const day = addDays(heatStart, i);
-    return { date: day, ...(day <= date ? dayScore(allTargets, logs, day) : { done: 0, total: 0 }) };
+    return { date: day, ...(day <= date ? dayScore(allTargets, logs, day) : { done: 0, total: 0, score: 0, parts: [] }) };
   });
   let bestStreak = 0;
   let run = 0;

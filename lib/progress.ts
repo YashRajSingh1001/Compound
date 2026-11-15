@@ -100,11 +100,30 @@ export function dailyStatus(
   };
 }
 
-/** How many daily non-negotiables were done on `date`. */
-export function dayScore(targets: Target[], logs: DailyLog[], date: string): { done: number; total: number } {
-  const daily = targets.filter((t) => t.kind === "daily");
-  const done = daily.filter((t) => dailyStatus(t, targets, logs, date).done).length;
-  return { done, total: daily.length };
+export type DayPart = { name: string; icon?: string; value: number; required: number; share: number; metric: Target["metric"] };
+
+export function partialShare(status: DailyStatus): number {
+  if (status.done) return 1;
+  if (status.extraRest || status.required <= 0) return 0;
+  return Math.min(status.value / status.required, 1);
+}
+
+export function dayScore(
+  targets: Target[],
+  logs: DailyLog[],
+  date: string,
+): { done: number; total: number; score: number; parts: DayPart[] } {
+  const statuses = targets.filter((t) => t.kind === "daily").map((t) => dailyStatus(t, targets, logs, date));
+  const parts = statuses.map((s) => ({
+    name: s.target.name,
+    icon: s.target.rules.icon,
+    value: s.value,
+    required: s.required,
+    share: partialShare(s),
+    metric: s.target.metric,
+  }));
+  const score = parts.length ? parts.reduce((a, p) => a + p.share, 0) / parts.length : 0;
+  return { done: statuses.filter((s) => s.done).length, total: statuses.length, score, parts };
 }
 
 /**

@@ -165,7 +165,7 @@ export function StreakCard({
               <span className="font-mono text-[11px] text-muted">{LETTERS[i]}</span>
               <span
                 className={`size-3 rounded-full ${
-                  future ? "bg-chip" : full ? "bg-good" : day.done > 0 ? "bg-warn" : "bg-line"
+                  future ? "bg-chip" : full ? "bg-good" : day.score > 0 ? "bg-warn" : "bg-line"
                 } ${isToday ? "outline-2 outline-offset-2 outline-accent" : ""}`}
               />
             </>
@@ -228,41 +228,67 @@ export function PaceCard({ main, parts }: { main: WeeklyProgress; parts: WeeklyP
 
 const HEAT_LEVELS = [
   "var(--chip)",
-  "color-mix(in srgb, var(--accent) 30%, var(--chip))",
-  "color-mix(in srgb, var(--accent) 62%, var(--chip))",
+  "color-mix(in srgb, var(--accent) 22%, var(--chip))",
+  "color-mix(in srgb, var(--accent) 45%, var(--chip))",
+  "color-mix(in srgb, var(--accent) 72%, var(--chip))",
   "var(--accent)",
 ];
 
+const HEAT_KEY = ["Nothing logged", "Under a third", "Around half", "Most of it", "Everything done"];
+
 function heatLevel(day: WeekDay): number {
-  if (day.total === 0 || day.done === 0) return 0;
-  if (day.done === day.total) return 3;
-  return day.done / day.total >= 0.5 ? 2 : 1;
+  if (day.total === 0 || day.score <= 0) return 0;
+  if (day.done === day.total) return 4;
+  if (day.score >= 0.67) return 3;
+  return day.score >= 0.34 ? 2 : 1;
 }
 
-/** GitHub-style grid of the last weeks: one square per day, darker = more done. */
-export function Heatmap({ heat, today, realToday }: { heat: WeekDay[]; today: string; realToday?: string }) {
-  const past = heat.filter((d) => d.date <= today && d.total > 0);
-  const green = past.filter((d) => d.done === d.total).length;
-  const avg = past.length ? Math.round((past.reduce((a, d) => a + d.done / d.total, 0) / past.length) * 100) : 0;
+function partText(part: WeekDay["parts"][number]): string {
+  if (part.share >= 1) return `${part.name} ✓`;
+  if (part.metric === "bool" || part.value <= 0) return `${part.name} ✗`;
+  const amount = part.metric === "minutes" ? `${formatMinutes(part.value)} / ${formatMinutes(part.required)}` : `${part.value} / ${part.required}`;
+  return `${part.name} ${amount}`;
+}
+
+function dayTooltip(day: WeekDay, today: string): string {
+  if (day.date > today || day.total === 0) return formatDay(day.date);
+  return [`${formatDay(day.date)} · ${Math.round(day.score * 100)}%`, ...day.parts.map(partText)].join("\n");
+}
+
+export function Heatmap({
+  heat,
+  today,
+  realToday,
+  since,
+}: {
+  heat: WeekDay[];
+  today: string;
+  realToday?: string;
+  since?: string;
+}) {
+  const start = since ?? heat.find((d) => d.score > 0)?.date ?? today;
+  const past = heat.filter((d) => d.date >= start && d.date <= today && d.total > 0);
+  const full = past.filter((d) => d.done === d.total).length;
+  const partial = past.filter((d) => d.done < d.total && d.score > 0).length;
+  const missed = past.filter((d) => d.score <= 0).length;
+  const avg = past.length ? Math.round((past.reduce((a, d) => a + d.score, 0) / past.length) * 100) : 0;
   return (
     <section className={`${card} flex flex-col gap-4`}>
       <div className="flex items-baseline justify-between gap-2">
         <span className="label">Last {heat.length / 7} weeks</span>
-        <span className="text-sm text-muted">
-          {green} green {green === 1 ? "day" : "days"} · {avg}% avg
-        </span>
+        <span className="text-sm text-muted">{avg}% of each day done, on average</span>
       </div>
       <div className="grid grid-flow-col grid-rows-7 gap-[5px]" style={{ gridAutoColumns: "minmax(0, 1fr)" }}>
         {heat.map((day) => {
           const className = `aspect-square rounded-[4px] ${day.date > today ? "opacity-30" : ""} ${
             day.date === today ? "outline-[1.5px] outline-foreground" : ""
           }`;
-          const title = `${formatDay(day.date)}${day.date <= today ? ` · ${day.done}/${day.total}` : ""}`;
+          const title = dayTooltip(day, today);
           return realToday && day.date <= realToday ? (
             <Link
               key={day.date}
               href={dayHref(day.date, realToday)}
-              title={`${title} · open`}
+              title={title}
               aria-label={`Open ${formatDay(day.date)}`}
               className={`${className} transition hover:outline-[1.5px] hover:outline-accent`}
               style={{ background: HEAT_LEVELS[heatLevel(day)] }}
@@ -272,12 +298,18 @@ export function Heatmap({ heat, today, realToday }: { heat: WeekDay[]; today: st
           );
         })}
       </div>
-      <div className="flex items-center gap-1.5 text-xs text-muted">
-        Less
-        {HEAT_LEVELS.map((bg) => (
-          <span key={bg} className="size-3 rounded-[3px]" style={{ background: bg }} />
-        ))}
-        More
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-muted">
+        <span className="flex items-center gap-1.5">
+          Less
+          {HEAT_LEVELS.map((bg, i) => (
+            <span key={bg} title={HEAT_KEY[i]} className="size-3 rounded-[3px]" style={{ background: bg }} />
+          ))}
+          More
+        </span>
+        <span>
+          <span className="font-semibold text-foreground">{full}</span> full · <span className="font-semibold text-foreground">{partial}</span> partial ·{" "}
+          <span className="font-semibold text-foreground">{missed}</span> missed
+        </span>
       </div>
     </section>
   );
