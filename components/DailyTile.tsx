@@ -22,16 +22,18 @@ export function DailyTile({
   index = 0,
   href,
   note,
+  defaultOpen = false,
 }: {
   status: DailyStatus;
   color?: string;
   index?: number;
   href?: string;
   note?: string;
+  defaultOpen?: boolean;
 }) {
   const { target, date, required, tags } = status;
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [tag, setTag] = useState<string | null>(tags[0] ?? null);
   const [pending, startTransition] = useTransition();
   const [custom, setCustom] = useState("");

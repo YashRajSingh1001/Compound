@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type { WeekDay } from "@/lib/data";
 import { formatDay, formatMinutes } from "@/lib/dates";
+import { HEAT_KEY, HEAT_LEVELS } from "@/lib/heat";
 import { checkInHref } from "@/lib/nav";
 import type { WeeklyProgress } from "@/lib/progress";
+import { HeatGrid } from "./HeatGrid";
 import { ThemeToggle } from "./ThemeToggle";
 import { PaceBadge, ProgressRing } from "./ui";
 
@@ -169,35 +171,6 @@ export function PaceCard({ main, parts }: { main: WeeklyProgress; parts: WeeklyP
   );
 }
 
-const HEAT_LEVELS = [
-  "var(--chip)",
-  "color-mix(in srgb, var(--accent) 22%, var(--chip))",
-  "color-mix(in srgb, var(--accent) 45%, var(--chip))",
-  "color-mix(in srgb, var(--accent) 72%, var(--chip))",
-  "var(--accent)",
-];
-
-const HEAT_KEY = ["Nothing logged", "Under a third", "Around half", "Most of it", "Everything done"];
-
-function heatLevel(day: WeekDay): number {
-  if (day.total === 0 || day.score <= 0) return 0;
-  if (day.done === day.total) return 4;
-  if (day.score >= 0.67) return 3;
-  return day.score >= 0.34 ? 2 : 1;
-}
-
-function partText(part: WeekDay["parts"][number]): string {
-  if (part.share >= 1) return `${part.name} ✓`;
-  if (part.metric === "bool" || part.value <= 0) return `${part.name} ✗`;
-  const amount = part.metric === "minutes" ? `${formatMinutes(part.value)} / ${formatMinutes(part.required)}` : `${part.value} / ${part.required}`;
-  return `${part.name} ${amount}`;
-}
-
-function dayTooltip(day: WeekDay, today: string): string {
-  if (day.date > today || day.total === 0) return formatDay(day.date);
-  return [`${formatDay(day.date)} · ${Math.round(day.score * 100)}%`, ...day.parts.map(partText)].join("\n");
-}
-
 export function Heatmap({
   heat,
   today,
@@ -221,26 +194,7 @@ export function Heatmap({
         <span className="label">Last {heat.length / 7} weeks</span>
         <span className="text-sm text-muted">{avg}% of each day done, on average</span>
       </div>
-      <div className="grid grid-flow-col grid-rows-7 gap-[5px]" style={{ gridAutoColumns: "minmax(0, 1fr)" }}>
-        {heat.map((day) => {
-          const className = `aspect-square rounded-[4px] ${day.date > today ? "opacity-30" : ""} ${
-            day.date === today ? "outline-[1.5px] outline-foreground" : ""
-          }`;
-          const title = dayTooltip(day, today);
-          return linkable && day.date <= today ? (
-            <Link
-              key={day.date}
-              href={checkInHref(day.date, today)}
-              title={title}
-              aria-label={`Check in for ${formatDay(day.date)}`}
-              className={`${className} transition hover:outline-[1.5px] hover:outline-accent`}
-              style={{ background: HEAT_LEVELS[heatLevel(day)] }}
-            />
-          ) : (
-            <span key={day.date} title={title} className={className} style={{ background: HEAT_LEVELS[heatLevel(day)] }} />
-          );
-        })}
-      </div>
+      <HeatGrid heat={heat} today={today} linkable={linkable} />
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-muted">
         <span className="flex items-center gap-1.5">
           Less

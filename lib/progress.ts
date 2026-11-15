@@ -2,7 +2,7 @@
 // No database access here, so the same logic serves the app, the verdict and
 // (later) the MCP server.
 
-import { addDays, daysBetween, isWeekend, weekStart, weekdayIndex } from "./dates";
+import { addDays, daysBetween, formatMinutes, isWeekend, weekStart, weekdayIndex } from "./dates";
 import type { DailyLog, Target, Task } from "./types";
 
 const REST_TAG = "rest";
@@ -100,7 +100,34 @@ export function dailyStatus(
   };
 }
 
-export type DayPart = { name: string; icon?: string; value: number; required: number; share: number; metric: Target["metric"] };
+export type DayPart = {
+  name: string;
+  icon?: string;
+  value: number;
+  required: number;
+  share: number;
+  metric: Target["metric"];
+  detail?: string;
+};
+
+export type DayExtra = { name: string; icon?: string; value: number; unit: string | null; metric: Target["metric"] };
+
+function partDetail(status: DailyStatus): string | undefined {
+  const tagged = status.logs.filter((l) => l.tag);
+  if (!tagged.length) return undefined;
+  if (status.target.metric !== "minutes") return tagged[0].tag ?? undefined;
+  const byTag = new Map<string, number>();
+  for (const l of tagged) byTag.set(l.tag!, (byTag.get(l.tag!) ?? 0) + Number(l.value));
+  return [...byTag].map(([tag, minutes]) => `${tag} ${formatMinutes(minutes)}`).join(" · ");
+}
+
+export function dayExtras(targets: Target[], logs: DailyLog[], date: string): DayExtra[] {
+  return targets
+    .filter((t) => t.kind === "weekly" && !t.rollup_from)
+    .map((t) => ({ t, value: sum(logs.filter((l) => l.target_id === t.id && l.log_date === date)) }))
+    .filter((x) => x.value > 0)
+    .map(({ t, value }) => ({ name: t.name, icon: t.rules.icon, value, unit: t.unit, metric: t.metric }));
+}
 
 export function partialShare(status: DailyStatus): number {
   if (status.done) return 1;
@@ -121,6 +148,7 @@ export function dayScore(
     required: s.required,
     share: partialShare(s),
     metric: s.target.metric,
+    detail: partDetail(s),
   }));
   const score = parts.length ? parts.reduce((a, p) => a + p.share, 0) / parts.length : 0;
   return { done: statuses.filter((s) => s.done).length, total: statuses.length, score, parts };
@@ -218,8 +246,8 @@ export type MilestoneProgress = {
   perDayNeeded: number | null;
   /** latest mode: increase per week still needed. */
   perWeekNeeded: number | null;
-  /** tasks mode: what to work on next (in progress first). */
   nextTasks: Task[];
+  doneTasks: Task[];
   latestDate: string | null;
 };
 
@@ -244,6 +272,7 @@ export function milestoneProgress(
       perDayNeeded: null,
       perWeekNeeded: weeksLeft ? Math.max(total - done, 0) / weeksLeft : null,
       nextTasks: [],
+      doneTasks: [],
       latestDate: latest?.log_date ?? null,
     };
   }
@@ -256,6 +285,9 @@ export function milestoneProgress(
     .filter((t) => t.status !== "done")
     .sort((a, b) => Number(b.status === "in_progress") - Number(a.status === "in_progress") || a.sort - b.sort)
     .slice(0, 2);
+  const doneTasks = items
+    .filter((t) => t.status === "done")
+    .sort((a, b) => (b.completed_at ?? "").localeCompare(a.completed_at ?? "") || b.sort - a.sort);
 
   return {
     target,
@@ -266,6 +298,7 @@ export function milestoneProgress(
     perDayNeeded: daysLeft ? (total - done) / daysLeft : null,
     perWeekNeeded: null,
     nextTasks,
+    doneTasks,
     latestDate: null,
   };
 }

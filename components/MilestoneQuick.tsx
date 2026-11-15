@@ -6,14 +6,12 @@ import { daysBetween, formatDay, formatMinutes } from "@/lib/dates";
 import type { MilestoneProgress } from "@/lib/progress";
 import { IconBubble, ProgressBar } from "./ui";
 
-/**
- * Check-in view of one milestone: progress by hours, plus a quick way to move
- * the next checklist item along — or, for count goals, enter the latest number.
- */
 export function MilestoneQuick({ progress, date, color }: { progress: MilestoneProgress; date: string; color?: string }) {
   const { target, mode, done, total } = progress;
   const [pending, startTransition] = useTransition();
   const [count, setCount] = useState("");
+  const [allDone, setAllDone] = useState(false);
+  const doneShown = allDone ? progress.doneTasks : progress.doneTasks.slice(0, 1);
 
   const run = (action: () => Promise<void>) => startTransition(action);
   const stale = mode === "latest" && (!progress.latestDate || daysBetween(progress.latestDate, date) >= 7);
@@ -63,6 +61,35 @@ export function MilestoneQuick({ progress, date, color }: { progress: MilestoneP
             </button>
           </div>
         ))}
+
+      {mode === "tasks" && progress.doneTasks.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          {doneShown.map((task) => (
+            <div key={task.id} className="flex items-center gap-2 rounded-2xl border border-line px-3 py-2">
+              <span aria-hidden className="text-good">
+                ✓
+              </span>
+              <span className="flex flex-1 flex-col text-sm text-muted">
+                {task.title}
+                <span className="text-xs">Done · {formatMinutes(task.est_minutes ?? 0)}</span>
+              </span>
+              <button
+                type="button"
+                aria-label={`Undo: ${task.title} is not done`}
+                onClick={() => run(() => setMilestoneTaskStatus(task.id, "in_progress"))}
+                className="rounded-full bg-chip px-3 py-1.5 text-xs font-medium active:scale-95"
+              >
+                Undo
+              </button>
+            </div>
+          ))}
+          {progress.doneTasks.length > 1 && (
+            <button type="button" onClick={() => setAllDone((v) => !v)} className="self-start px-1 text-xs font-medium text-accent">
+              {allDone ? "Show less" : `Show all ${progress.doneTasks.length} done`}
+            </button>
+          )}
+        </div>
+      )}
 
       {mode === "latest" && (
         <form
