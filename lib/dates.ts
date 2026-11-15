@@ -87,7 +87,9 @@ export function weekdayName(iso: string): string {
   return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][weekdayIndex(iso)];
 }
 
-export function pickDay(param: unknown, today: string, maxDaysBack = 120): string {
+export const MAX_DAYS_BACK = 126;
+
+export function pickDay(param: unknown, today: string, maxDaysBack = MAX_DAYS_BACK): string {
   if (!isISODate(param) || param > today || param < addDays(today, -maxDaysBack)) return today;
   return param;
 }

@@ -92,7 +92,7 @@ export function DailyTile({
   if (target.metric === "minutes") detail = `${Math.round(value)} of ${required} min`;
   else if (extraRest) detail = "Extra rest day this week";
   else if (tags.length) detail = loggedTag ? `Logged · ${loggedTag}` : "Not logged yet";
-  else detail = done ? "Done for today" : "Not done yet";
+  else detail = done ? "Done" : "Not done yet";
   if (note) detail = note;
 
   const expandable = !href && (target.metric !== "bool" || tags.length > 0);

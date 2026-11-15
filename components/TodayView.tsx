@@ -14,32 +14,21 @@ import { VerdictCard } from "./VerdictCard";
 import { VisionBanner } from "./VisionBanner";
 import { WeekRow } from "./WeekRow";
 
-// Bento grid: 12 columns on laptops, one column on phones. `order` puts the
-// tap targets right under the header on a phone.
 const card = "rounded-3xl border border-line bg-card p-5";
 
-/**
- * The Today screen for one day's snapshot. No data fetching, so the public
- * demo can render it with generated data.
- */
 export function TodayView({
   day,
   demo = false,
   vision = null,
-  today = day.date,
 }: {
   day: DaySnapshot;
   demo?: boolean;
   vision?: VisionCardData | null;
-  today?: string;
 }) {
-  const past = day.date < today;
   const color = (areaId: string | null) => day.areas.find((a) => a.id === areaId)?.color;
   const done = day.daily.filter((d) => d.done);
   const left = day.daily.filter((d) => !d.done).map((d) => d.target.name);
 
-  // The headline pace card: the first weekly minutes target that adds up a
-  // daily target without a tag filter (Study hours), plus its tagged parts.
   const main = day.weekly.find((w) => w.target.metric === "minutes" && w.target.rollup_from && !w.target.rules.tag);
   const parts = main ? day.weekly.filter((w) => w.target.rollup_from === main.target.rollup_from && w.target.rules.tag) : [];
   const weekRows = day.weekly.filter((w) => w !== main && !parts.includes(w));
@@ -47,14 +36,14 @@ export function TodayView({
 
   return (
     <>
-      <TodayHeader date={day.date} today={today} showToggle={!demo} navigable={!demo} />
+      <TodayHeader date={day.date} showToggle={!demo} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <div className="order-1 lg:col-span-5">
           <HeroCard done={done.length} total={day.daily.length} left={left} quote={lineOfTheDay(day.date)} />
         </div>
         <div className="order-3 lg:order-2 lg:col-span-3">
-          <StreakCard streak={day.streak} best={day.bestStreak} week={day.week} today={day.date} realToday={demo ? undefined : today} />
+          <StreakCard streak={day.streak} best={day.bestStreak} week={day.week} today={day.date} linkable={!demo} />
         </div>
         {main && (
           <div className="order-4 lg:order-3 lg:col-span-4">
@@ -62,7 +51,7 @@ export function TodayView({
           </div>
         )}
 
-        {!past && day.suggestions.length > 0 && (
+        {day.suggestions.length > 0 && (
           <div className="order-3 lg:order-4 lg:col-span-12">
             <SuggestionsCard suggestions={day.suggestions} />
           </div>
@@ -73,18 +62,18 @@ export function TodayView({
           className="order-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:order-4 lg:col-span-12 xl:grid-cols-4"
         >
           {day.daily.map((status, i) => (
-            <DailyTile key={status.target.id} status={status} color={color(status.target.area_id)} index={i} {...tileLink(status.target, day, !past)} />
+            <DailyTile key={status.target.id} status={status} color={color(status.target.area_id)} index={i} {...tileLink(status.target, day)} />
           ))}
         </section>
 
-        {!past && vision && (
+        {vision && (
           <div className="order-3 lg:order-4 lg:col-span-12">
             <VisionBanner item={vision} today={day.date} />
           </div>
         )}
 
         <div className="order-8 lg:order-5 lg:col-span-5">
-          <Heatmap heat={day.heat} today={day.date} realToday={demo ? undefined : today} />
+          <Heatmap heat={day.heat} today={day.date} linkable={!demo} />
         </div>
 
         <section className={`${card} order-5 flex flex-col gap-4 lg:order-6 lg:col-span-4`}>
@@ -94,7 +83,6 @@ export function TodayView({
           ))}
         </section>
 
-        {!past && (
         <section className={`${card} order-6 flex flex-col gap-2 lg:order-7 lg:col-span-3`}>
           <div className="flex items-baseline justify-between">
             <span className="label">To-do</span>
@@ -104,7 +92,6 @@ export function TodayView({
           </div>
           <TaskList tasks={day.tasks} date={day.date} areas={day.areas} flat />
         </section>
-        )}
 
         {day.milestones.length > 0 && (
           <section className={`${card} order-7 flex flex-col gap-1 lg:order-8 lg:col-span-7`}>

@@ -1,9 +1,7 @@
-// The bento cards at the top of the Today screen. Server components: they
-// only display numbers, the interactive pieces live in their own files.
-
 import Link from "next/link";
 import type { WeekDay } from "@/lib/data";
-import { addDays, formatDay, formatMinutes, weekdayName } from "@/lib/dates";
+import { formatDay, formatMinutes } from "@/lib/dates";
+import { checkInHref } from "@/lib/nav";
 import type { WeeklyProgress } from "@/lib/progress";
 import { ThemeToggle } from "./ThemeToggle";
 import { PaceBadge, ProgressRing } from "./ui";
@@ -19,69 +17,21 @@ function longDate(iso: string): string {
     .replace(",", " ·");
 }
 
-export const dayHref = (date: string, today: string) => (date === today ? "/" : `/?date=${date}`);
-
-function dayTitle(date: string, today: string): string {
-  if (date === today) return "Today";
-  if (date === addDays(today, -1)) return "Yesterday";
-  return weekdayName(date);
-}
-
-export function TodayHeader({
-  date,
-  today = date,
-  showToggle = true,
-  navigable = false,
-}: {
-  date: string;
-  today?: string;
-  showToggle?: boolean;
-  navigable?: boolean;
-}) {
-  const past = date < today;
-  const arrow =
-    "flex size-9 items-center justify-center rounded-full border border-line bg-card text-lg leading-none text-muted transition hover:text-foreground";
+export function TodayHeader({ date, showToggle = true }: { date: string; showToggle?: boolean }) {
   return (
     <header className="flex items-end justify-between gap-4">
       <div className="flex min-w-0 flex-col gap-1">
         <span className="label truncate">{longDate(date)}</span>
-        <h1 className="font-serif font-semibold text-5xl leading-none tracking-tight lg:text-6xl">{dayTitle(date, today)}</h1>
-        {navigable && (
-          <nav aria-label="Change day" className="mt-2 flex items-center gap-2">
-            <Link href={dayHref(addDays(date, -1), today)} aria-label="Previous day" className={arrow}>
-              ‹
-            </Link>
-            {past ? (
-              <Link href={dayHref(addDays(date, 1), today)} aria-label="Next day" className={arrow}>
-                ›
-              </Link>
-            ) : (
-              <span aria-hidden className={`${arrow} opacity-30`}>
-                ›
-              </span>
-            )}
-            {past && (
-              <Link href="/" className="ml-1 rounded-full bg-accent-soft px-3 py-1.5 text-xs font-semibold text-accent">
-                Back to today
-              </Link>
-            )}
-          </nav>
-        )}
+        <h1 className="font-serif font-semibold text-5xl leading-none tracking-tight lg:text-6xl">Today</h1>
       </div>
       <div className="flex shrink-0 items-center gap-2.5">
         <Link
-          href={past ? `/check-in?date=${date}` : "/check-in"}
+          href="/check-in"
           className="flex h-11 items-center rounded-full bg-accent px-4 text-sm font-semibold whitespace-nowrap text-on-accent transition active:scale-95 sm:px-5"
         >
-          {past ? (
-            "Check-in for this day"
-          ) : (
-            <>
-              <span className="hidden sm:inline">Evening&nbsp;</span>
-              <span className="sm:hidden">Check-in</span>
-              <span className="hidden sm:inline">check-in</span>
-            </>
-          )}
+          <span className="hidden sm:inline">Evening&nbsp;</span>
+          <span className="sm:hidden">Check-in</span>
+          <span className="hidden sm:inline">check-in</span>
         </Link>
         {showToggle && (
           <div className="lg:hidden">
@@ -93,7 +43,6 @@ export function TodayHeader({
   );
 }
 
-/** Completion ring, what's left, and the line of the day. */
 export function HeroCard({ done, total, left, quote }: { done: number; total: number; left: string[]; quote: string }) {
   const pct = total ? Math.round((done / total) * 100) : 0;
   const all = total > 0 && done === total;
@@ -123,19 +72,18 @@ export function HeroCard({ done, total, left, quote }: { done: number; total: nu
   );
 }
 
-/** Current streak, best streak and this week's seven days. */
 export function StreakCard({
   streak,
   best,
   week,
   today,
-  realToday,
+  linkable = false,
 }: {
   streak: number;
   best: number;
   week: WeekDay[];
   today: string;
-  realToday?: string;
+  linkable?: boolean;
 }) {
   const toBeat = best - streak;
   return (
@@ -149,11 +97,7 @@ export function StreakCard({
         <span className="text-muted">green {streak === 1 ? "day" : "days"}</span>
       </div>
       <span className="text-sm text-muted">
-        {best === 0
-          ? realToday && today < realToday
-            ? "No green days yet by this day."
-            : "A green day today starts one."
-          : toBeat > 0 ? `Best: ${best} · ${toBeat} more to beat it` : `Best: ${best} · this is your record`}
+        {best === 0 ? "A green day today starts one." : toBeat > 0 ? `Best: ${best} · ${toBeat} more to beat it` : `Best: ${best} · this is your record`}
       </span>
       <div className="mt-auto grid grid-cols-7 gap-1 pt-2">
         {week.map((day, i) => {
@@ -170,11 +114,11 @@ export function StreakCard({
               />
             </>
           );
-          return realToday && day.date <= realToday ? (
+          return linkable && !future ? (
             <Link
               key={day.date}
-              href={dayHref(day.date, realToday)}
-              title={`Open ${formatDay(day.date)}`}
+              href={checkInHref(day.date, today)}
+              title={`Check in for ${formatDay(day.date)}`}
               className="flex flex-col items-center gap-1.5 rounded-lg py-1 transition hover:bg-chip"
             >
               {dot}
@@ -190,7 +134,6 @@ export function StreakCard({
   );
 }
 
-/** The main minutes target (study) with where you should be by tonight. */
 export function PaceCard({ main, parts }: { main: WeeklyProgress; parts: WeeklyProgress[] }) {
   const gap = main.actual - main.expected;
   const pct = main.goal ? Math.min((main.actual / main.goal) * 100, 100) : 0;
@@ -258,12 +201,12 @@ function dayTooltip(day: WeekDay, today: string): string {
 export function Heatmap({
   heat,
   today,
-  realToday,
+  linkable = false,
   since,
 }: {
   heat: WeekDay[];
   today: string;
-  realToday?: string;
+  linkable?: boolean;
   since?: string;
 }) {
   const start = since ?? heat.find((d) => d.score > 0)?.date ?? today;
@@ -284,12 +227,12 @@ export function Heatmap({
             day.date === today ? "outline-[1.5px] outline-foreground" : ""
           }`;
           const title = dayTooltip(day, today);
-          return realToday && day.date <= realToday ? (
+          return linkable && day.date <= today ? (
             <Link
               key={day.date}
-              href={dayHref(day.date, realToday)}
+              href={checkInHref(day.date, today)}
               title={title}
-              aria-label={`Open ${formatDay(day.date)}`}
+              aria-label={`Check in for ${formatDay(day.date)}`}
               className={`${className} transition hover:outline-[1.5px] hover:outline-accent`}
               style={{ background: HEAT_LEVELS[heatLevel(day)] }}
             />

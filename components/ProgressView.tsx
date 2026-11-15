@@ -229,7 +229,7 @@ export function ProgressView({ data, readOnly = false }: { data: ProgressData; r
         </section>
 
         <div className="lg:col-span-7">
-          <Heatmap heat={day.heat} today={day.date} realToday={readOnly ? undefined : day.date} since={data.trackingSince} />
+          <Heatmap heat={day.heat} today={day.date} linkable={!readOnly} since={data.trackingSince} />
         </div>
         <section className={`${card} flex flex-col gap-3 lg:col-span-5`}>
           <div className="flex flex-col gap-0.5">

@@ -1,16 +1,15 @@
 import { Suspense } from "react";
 import { TodayView } from "@/components/TodayView";
 import { getToday, loadDay } from "@/lib/data";
-import { pickDay } from "@/lib/dates";
 import { visionOfTheDay } from "@/lib/vision";
 import { loadVision } from "@/lib/vision-data";
 
 export const maxDuration = 60;
 
-export default function TodayPage({ searchParams }: PageProps<"/">) {
+export default function TodayPage() {
   return (
     <Suspense fallback={<TodaySkeleton />}>
-      <Today searchParams={searchParams} />
+      <Today />
     </Suspense>
   );
 }
@@ -27,11 +26,10 @@ function TodaySkeleton() {
   );
 }
 
-async function Today({ searchParams }: { searchParams: PageProps<"/">["searchParams"] }) {
-  const [today, params] = await Promise.all([getToday(), searchParams]);
-  const date = pickDay(params.date, today);
-  const [day, vision] = await Promise.all([loadDay(date), date === today ? todaysVision(today) : null]);
-  return <TodayView day={day} vision={vision} today={today} />;
+async function Today() {
+  const today = await getToday();
+  const [day, vision] = await Promise.all([loadDay(today), todaysVision(today)]);
+  return <TodayView day={day} vision={vision} />;
 }
 
 async function todaysVision(today: string) {

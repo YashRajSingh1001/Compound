@@ -1,6 +1,3 @@
-// Every page in the app, with its icon (a 24×24 stroke path).
-// A plain module so server and client components can both read it.
-
 export const NAV = {
   today: { href: "/", label: "Today", icon: "M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1Z" },
   todo: { href: "/todo", label: "To-do", icon: "M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2" },
@@ -25,3 +22,5 @@ export const NAV = {
   },
   more: { href: "/more", label: "More", icon: "M5 12h.01M12 12h.01M19 12h.01" },
 };
+
+export const checkInHref = (date: string, today: string) => (date === today ? "/check-in" : `/check-in?date=${date}`);
